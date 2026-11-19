@@ -1,0 +1,147 @@
+{
+  "version": "0.2.0",
+  "status": "original-normative-neutral-starter-probes",
+  "warning": "These questions are exploratory probes, not an accessibility or security conformance standard, nor a formal W3C questionnaire.",
+  "questions": [
+    {
+      "id": "ACC-001",
+      "area": "accessibility",
+      "prompt": "Does the project describe accessible experiences and known accessibility barriers?",
+      "why": "Documentation and existing issues may disclose barriers, but do not establish a complete assessment.",
+      "original": true
+    },
+    {
+      "id": "ACC-002",
+      "area": "accessibility",
+      "prompt": "Can essential tasks be completed using different input modalities?",
+      "why": "Keyboard, pointer, speech and touch interactions may need testing beyond source inspection.",
+      "original": true
+    },
+    {
+      "id": "ACC-003",
+      "area": "accessibility",
+      "prompt": "Are accessibility semantics, labels and alternative content provided where relevant?",
+      "why": "Look for accessible names, semantic structures, captions and alternatives.",
+      "original": true
+    },
+    {
+      "id": "ACC-004",
+      "area": "accessibility",
+      "prompt": "Are user preferences and assistive technology compatibility considered?",
+      "why": "Contrast, forced colors, reduced motion and zoom may require hands-on assessment.",
+      "original": true
+    },
+    {
+      "id": "INT-001",
+      "area": "internationalization",
+      "prompt": "Are languages and translated or localized experiences documented?",
+      "why": "Identify supported locales and any translation workflow.",
+      "original": true
+    },
+    {
+      "id": "INT-002",
+      "area": "internationalization",
+      "prompt": "Does text handling account for Unicode and varied writing systems?",
+      "why": "Encoding and directionality should not be assumed from language alone.",
+      "original": true
+    },
+    {
+      "id": "INT-003",
+      "area": "internationalization",
+      "prompt": "Are locale-sensitive formats and user input considered?",
+      "why": "Dates, numbers, addresses and sorting differ across locales.",
+      "original": true
+    },
+    {
+      "id": "PRI-001",
+      "area": "privacy",
+      "prompt": "What personal or sensitive data does the project collect, process or transmit?",
+      "why": "Locate data flow descriptions and distinguish code behavior from policy claims.",
+      "original": true
+    },
+    {
+      "id": "PRI-002",
+      "area": "privacy",
+      "prompt": "Are purpose limitation, data minimization and retention addressed?",
+      "why": "Policies may be incomplete and implementation may differ.",
+      "original": true
+    },
+    {
+      "id": "PRI-003",
+      "area": "privacy",
+      "prompt": "Could the system enable tracking, profiling or unexpected data disclosure?",
+      "why": "Look for analytics, identifiers, telemetry and third-party integrations.",
+      "original": true
+    },
+    {
+      "id": "SEC-001",
+      "area": "security",
+      "prompt": "Are trust boundaries, threats and security expectations documented?",
+      "why": "Consider threat models, known vulnerabilities and accepted risks.",
+      "original": true
+    },
+    {
+      "id": "SEC-002",
+      "area": "security",
+      "prompt": "Are authentication, authorization, and permissions appropriate for the use case?",
+      "why": "Presence of an authentication package is not proof of its correctness.",
+      "original": true
+    },
+    {
+      "id": "SEC-003",
+      "area": "security",
+      "prompt": "Are dependency, supply-chain and data integrity risks considered?",
+      "why": "Inspect available automation, release controls and advisories.",
+      "original": true
+    },
+    {
+      "id": "ARC-001",
+      "area": "architecture",
+      "prompt": "Is the purpose, scope and architecture understandable to maintainers and adopters?",
+      "why": "Look for design documentation, specifications, ADRs or public APIs.",
+      "original": true
+    },
+    {
+      "id": "ARC-002",
+      "area": "architecture",
+      "prompt": "Are compatibility, interoperability and graceful degradation considered?",
+      "why": "A declared feature may not work across all intended environments.",
+      "original": true
+    },
+    {
+      "id": "ARC-003",
+      "area": "architecture",
+      "prompt": "Are versions, deprecations and public interfaces managed transparently?",
+      "why": "Review release notes and upgrade or migration information.",
+      "original": true
+    },
+    {
+      "id": "SUS-001",
+      "area": "sustainability",
+      "prompt": "Does the project discuss energy, computation, data-transfer or storage impacts?",
+      "why": "No energy or emissions estimate should be inferred from a repository keyword.",
+      "original": true
+    },
+    {
+      "id": "SUS-002",
+      "area": "sustainability",
+      "prompt": "Does it consider the lifetime of user devices, dependencies and supported environments?",
+      "why": "Compatibility, repairability and lifecycle can affect e-waste.",
+      "original": true
+    },
+    {
+      "id": "SUS-003",
+      "area": "sustainability",
+      "prompt": "Are environmental assumptions, trade-offs and measurement methods documented?",
+      "why": "Quantitative claims require methods, boundaries and reproducible measurements.",
+      "original": true
+    },
+    {
+      "id": "SUS-004",
+      "area": "sustainability",
+      "prompt": "Are transparency, open governance and social impacts considered?",
+      "why": "Look for governance, contribution and impacted-community participation.",
+      "original": true
+    }
+  ]
+}

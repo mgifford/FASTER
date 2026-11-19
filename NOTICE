@@ -1,0 +1,15 @@
+FASTER
+Framework for Accessible, Secure, Traceable, Evidence-based Review
+Repository Review Assistant
+
+Copyright (C) 2026 FASTER contributors
+
+This project is licensed under the GNU Affero General Public License,
+version 3 only (AGPL-3.0-only). See LICENSE for the full text.
+
+Original review-pack questions and rules in data/packs/ are also licensed
+under AGPL-3.0-only. Imported third-party standards, questionnaires and
+review packs remain under their own licenses and are linked, not copied,
+unless their license and provenance are explicitly recorded.
+
+Corresponding Source: https://github.com/mgifford/FASTER

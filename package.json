@@ -1,0 +1,19 @@
+{
+  "name": "faster",
+  "description": "FASTER — Framework for Accessible, Secure, Traceable, Evidence-based Review. Experimental repository review assistant.",
+  "version": "0.2.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mgifford/FASTER.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "test": "node --test tests/*.test.mjs",
+    "validate": "node scripts/validate-data.mjs",
+    "check": "npm run validate && npm test"
+  },
+  "engines": { "node": ">=20" }
+}

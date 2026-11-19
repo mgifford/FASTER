@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "status": "unofficial-triage-probes",
+  "warning": "These prompts are original starter triage prompts, not verbatim nor complete W3C questionnaires. Consult source documents before claiming a formal review.",
+  "questions": [
+    {"id":"A11Y-001","area":"accessibility","prompt":"Does the technology define interoperable accessibility semantics and names where relevant?","why":"Semantics must be available to user agents and assistive technology."},
+    {"id":"A11Y-002","area":"accessibility","prompt":"Can users interact without relying on a single input modality?","why":"Keyboard, pointer, speech and other modalities should not be excluded by design."},
+    {"id":"A11Y-003","area":"accessibility","prompt":"Can user preferences such as reduced motion, contrast or text presentation be respected?","why":"Specifications can constrain implementation support for preferences."},
+    {"id":"A11Y-004","area":"accessibility","prompt":"Are alternatives available for non-text and time-based information where applicable?","why":"Content alternatives may require specification-level mechanisms."},
+    {"id":"I18N-001","area":"internationalization","prompt":"Are language and text direction representable when needed?","why":"Language and direction influence rendering and assistive technologies."},
+    {"id":"I18N-002","area":"internationalization","prompt":"Does the technology preserve Unicode and diverse scripts?","why":"Text processing must not assume one script or repertoire."},
+    {"id":"I18N-003","area":"internationalization","prompt":"Are locale-sensitive presentation and input needs addressed?","why":"Dates, numbers, names, segmentation and input vary by locale."},
+    {"id":"PRIV-001","area":"privacy","prompt":"Does the specification identify collection or exposure of personal data?","why":"Assess unnecessary data exposure and data minimization."},
+    {"id":"PRIV-002","area":"privacy","prompt":"Could the technology enable tracking or fingerprinting?","why":"Multiple apparently harmless signals can identify users."},
+    {"id":"PRIV-003","area":"privacy","prompt":"Are privacy-related controls, consent and retention implications discussed?","why":"Reviewers need to understand control and data lifetime."},
+    {"id":"SEC-001","area":"security","prompt":"Does the specification identify attacker capabilities and trust boundaries?","why":"Security review needs a threat model."},
+    {"id":"SEC-002","area":"security","prompt":"Does the technology address permission, origin isolation and authorization where relevant?","why":"APIs can expose cross-origin or privilege boundaries."},
+    {"id":"SEC-003","area":"security","prompt":"Are integrity, secure transport and downgrade risks considered?","why":"Security properties must survive the surrounding protocol."},
+    {"id":"ARCH-001","area":"architecture","prompt":"Does the feature fit established Web platform design principles?","why":"Avoid incompatible or unnecessarily duplicative mechanisms."},
+    {"id":"ARCH-002","area":"architecture","prompt":"Are feature detection and graceful fallback possible?","why":"Interoperability and progressive enhancement reduce exclusions."},
+    {"id":"ARCH-003","area":"architecture","prompt":"Are extensibility, versioning and compatibility effects considered?","why":"A specification must remain implementable over time."},
+    {"id":"SUST-001","area":"sustainability","prompt":"Could the technology materially change energy demand during use?","why":"Consider device, network and supporting service energy. Experimental draft."},
+    {"id":"SUST-002","area":"sustainability","prompt":"Could the design increase network traffic, computation or storage demands?","why":"Look at lifecycle workload, not just page weight. Experimental draft."},
+    {"id":"SUST-003","area":"sustainability","prompt":"Could the design shorten device or browser support lifetimes?","why":"Compatibility can affect hardware replacement and e-waste. Experimental draft."},
+    {"id":"SUST-004","area":"sustainability","prompt":"Are water use and infrastructure consequences considered where material?","why":"Consider data-center and manufacturing implications without inventing metrics. Experimental draft."},
+    {"id":"SUST-005","area":"sustainability","prompt":"Are assumptions, trade-offs and measurable impacts documented?","why":"Distinguish measured effects from estimates and speculation. Experimental draft."},
+    {"id":"SUST-006","area":"sustainability","prompt":"Could wider adoption produce rebound or indirect effects?","why":"Efficiency gains do not guarantee lower aggregate impact. Experimental draft."}
+  ]
+}

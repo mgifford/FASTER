@@ -1,0 +1,225 @@
+{
+  "version": "0.2.0",
+  "note": "Keyword discovery only. Never use a match to assert compliance.",
+  "rules": [
+    {
+      "id": "G-ACC-001",
+      "questionId": "ACC-001",
+      "phrases": [
+        "accessib",
+        "screen reader",
+        "keyboard navigation",
+        "assistive technolog"
+      ]
+    },
+    {
+      "id": "G-ACC-002",
+      "questionId": "ACC-002",
+      "phrases": [
+        "keyboard",
+        "touch",
+        "pointer",
+        "voice control",
+        "focus order"
+      ]
+    },
+    {
+      "id": "G-ACC-003",
+      "questionId": "ACC-003",
+      "phrases": [
+        "aria-",
+        "accessible name",
+        "alt text",
+        "caption",
+        "semantic html"
+      ]
+    },
+    {
+      "id": "G-ACC-004",
+      "questionId": "ACC-004",
+      "phrases": [
+        "reduced motion",
+        "forced colors",
+        "contrast",
+        "zoom",
+        "user preference"
+      ]
+    },
+    {
+      "id": "G-INT-001",
+      "questionId": "INT-001",
+      "phrases": [
+        "localization",
+        "translation",
+        "language selector",
+        "i18n",
+        "l10n"
+      ]
+    },
+    {
+      "id": "G-INT-002",
+      "questionId": "INT-002",
+      "phrases": [
+        "unicode",
+        "utf-8",
+        "rtl",
+        "bidi",
+        "writing mode"
+      ]
+    },
+    {
+      "id": "G-INT-003",
+      "questionId": "INT-003",
+      "phrases": [
+        "locale",
+        "date format",
+        "intl.",
+        "number format",
+        "collation"
+      ]
+    },
+    {
+      "id": "G-PRI-001",
+      "questionId": "PRI-001",
+      "phrases": [
+        "personal data",
+        "user data",
+        "sensitive data",
+        "privacy",
+        "pii"
+      ]
+    },
+    {
+      "id": "G-PRI-002",
+      "questionId": "PRI-002",
+      "phrases": [
+        "retention",
+        "deletion",
+        "data minimization",
+        "privacy policy",
+        "data protection"
+      ]
+    },
+    {
+      "id": "G-PRI-003",
+      "questionId": "PRI-003",
+      "phrases": [
+        "analytics",
+        "tracking",
+        "telemetry",
+        "fingerprint",
+        "cookie"
+      ]
+    },
+    {
+      "id": "G-SEC-001",
+      "questionId": "SEC-001",
+      "phrases": [
+        "threat model",
+        "security consideration",
+        "attack surface",
+        "trust boundary",
+        "vulnerability"
+      ]
+    },
+    {
+      "id": "G-SEC-002",
+      "questionId": "SEC-002",
+      "phrases": [
+        "authentication",
+        "authorization",
+        "permissions",
+        "oauth",
+        "access control"
+      ]
+    },
+    {
+      "id": "G-SEC-003",
+      "questionId": "SEC-003",
+      "phrases": [
+        "dependency",
+        "supply chain",
+        "security advisory",
+        "integrity",
+        "code signing"
+      ]
+    },
+    {
+      "id": "G-ARC-001",
+      "questionId": "ARC-001",
+      "phrases": [
+        "architecture",
+        "design decision",
+        "api",
+        "specification",
+        "documentation"
+      ]
+    },
+    {
+      "id": "G-ARC-002",
+      "questionId": "ARC-002",
+      "phrases": [
+        "interoperab",
+        "compatib",
+        "progressive enhancement",
+        "feature detection",
+        "fallback"
+      ]
+    },
+    {
+      "id": "G-ARC-003",
+      "questionId": "ARC-003",
+      "phrases": [
+        "breaking change",
+        "deprecat",
+        "migration",
+        "semver",
+        "changelog"
+      ]
+    },
+    {
+      "id": "G-SUS-001",
+      "questionId": "SUS-001",
+      "phrases": [
+        "energy",
+        "bandwidth",
+        "gpu",
+        "power consumption",
+        "storage"
+      ]
+    },
+    {
+      "id": "G-SUS-002",
+      "questionId": "SUS-002",
+      "phrases": [
+        "older browser",
+        "device lifetime",
+        "hardware",
+        "repair",
+        "end-of-life"
+      ]
+    },
+    {
+      "id": "G-SUS-003",
+      "questionId": "SUS-003",
+      "phrases": [
+        "measurement",
+        "carbon",
+        "water use",
+        "sustainability",
+        "trade-off"
+      ]
+    },
+    {
+      "id": "G-SUS-004",
+      "questionId": "SUS-004",
+      "phrases": [
+        "governance",
+        "open source",
+        "community",
+        "social impact",
+        "contribution"
+      ]
+    }
+  ]
+}

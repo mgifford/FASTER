@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "note": "Literal phrase matching is a discovery aid, never sufficient for a conformance decision.",
+  "rules": [
+    {"id":"R-A11Y-001","questionId":"A11Y-001","phrases":["accessible name","accessibility tree","aria-","assistive technolog","semantics"]},
+    {"id":"R-A11Y-002","questionId":"A11Y-002","phrases":["keyboard","pointer","input modality","touch interaction","speech input"]},
+    {"id":"R-A11Y-003","questionId":"A11Y-003","phrases":["reduced motion","prefers-","forced colors","high contrast","user preference"]},
+    {"id":"R-A11Y-004","questionId":"A11Y-004","phrases":["alternative text","caption","transcript","text alternative","audio description"]},
+    {"id":"R-I18N-001","questionId":"I18N-001","phrases":["text direction","writing mode","language tag","bidirectional","dir attribute"]},
+    {"id":"R-I18N-002","questionId":"I18N-002","phrases":["unicode","utf-8","script","normalization"]},
+    {"id":"R-I18N-003","questionId":"I18N-003","phrases":["locale","localization","segmentation","date format","number format"]},
+    {"id":"R-PRIV-001","questionId":"PRIV-001","phrases":["personal data","personally identifiable","data minimization","user data","privacy consideration"]},
+    {"id":"R-PRIV-002","questionId":"PRIV-002","phrases":["fingerprint","tracking","cross-site","identif"]},
+    {"id":"R-PRIV-003","questionId":"PRIV-003","phrases":["consent","retention","user permission","privacy control","data deletion"]},
+    {"id":"R-SEC-001","questionId":"SEC-001","phrases":["threat model","attack surface","attacker","trust boundary","security consideration"]},
+    {"id":"R-SEC-002","questionId":"SEC-002","phrases":["same-origin","permissions policy","authorization","authentication","sandbox"]},
+    {"id":"R-SEC-003","questionId":"SEC-003","phrases":["integrity","transport security","downgrade","tls","https"]},
+    {"id":"R-ARCH-001","questionId":"ARCH-001","phrases":["design principle","interoperab","web platform","existing api"]},
+    {"id":"R-ARCH-002","questionId":"ARCH-002","phrases":["feature detection","fallback","progressive enhancement","graceful degradation"]},
+    {"id":"R-ARCH-003","questionId":"ARCH-003","phrases":["extensib","backward compatib","versioning","deprecat"]},
+    {"id":"R-SUST-001","questionId":"SUST-001","phrases":["energy","power consumption","battery","electricity"]},
+    {"id":"R-SUST-002","questionId":"SUST-002","phrases":["network traffic","bandwidth","data transfer","cpu usage","gpu","storage"]},
+    {"id":"R-SUST-003","questionId":"SUST-003","phrases":["device lifetime","hardware","legacy browser","obsolescence","e-waste"]},
+    {"id":"R-SUST-004","questionId":"SUST-004","phrases":["water consumption","cooling","water use","data center","data centre"]},
+    {"id":"R-SUST-005","questionId":"SUST-005","phrases":["measurement","trade-off","sustainab","environmental impact","carbon"]},
+    {"id":"R-SUST-006","questionId":"SUST-006","phrases":["rebound effect","indirect effect","system effect","adoption"]}
+  ]
+}

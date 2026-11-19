@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "reviewAreas": [
+    {
+      "id": "accessibility",
+      "title": "Accessibility and inclusive interaction",
+      "classification": "generic-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/WAI/standards-guidelines/"
+      ],
+      "questionStatus": "original, non-normative starter review probes"
+    },
+    {
+      "id": "internationalization",
+      "title": "Languages and internationalization",
+      "classification": "generic-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/International/"
+      ],
+      "questionStatus": "original, non-normative starter review probes"
+    },
+    {
+      "id": "privacy",
+      "title": "Privacy and data protection",
+      "classification": "generic-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/TR/privacy-principles/"
+      ],
+      "questionStatus": "original, non-normative starter review probes"
+    },
+    {
+      "id": "security",
+      "title": "Security and trust boundaries",
+      "classification": "generic-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/TR/security-privacy-questionnaire/"
+      ],
+      "questionStatus": "original, non-normative starter review probes"
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture and interoperability",
+      "classification": "generic-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/TR/design-principles/"
+      ],
+      "questionStatus": "original, non-normative starter review probes"
+    },
+    {
+      "id": "sustainability",
+      "title": "Environmental and social sustainability (experimental)",
+      "classification": "experimental-review-area",
+      "authoritativeSources": [
+        "https://www.w3.org/TR/web-sustainability-guidelines/"
+      ],
+      "questionStatus": "original experimental questions; not official or adopted requirements"
+    }
+  ]
+}

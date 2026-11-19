@@ -1,0 +1,14 @@
+[
+  {
+    "questionId": "ACC-001",
+    "suggestedAnswer": "needs-investigation",
+    "explanation": "A phrase match is not enough to determine whether the documented accessibility considerations are sufficient.",
+    "evidenceIds": []
+  },
+  {
+    "questionId": "SUST-001",
+    "suggestedAnswer": "needs-investigation",
+    "explanation": "Energy references require a causal impact assessment and evidence, not just a keyword match.",
+    "evidenceIds": []
+  }
+]

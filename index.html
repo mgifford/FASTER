@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>FASTER | Repository Review Assistant</title>
+  <meta name="description" content="FASTER: evidence-assisted cross-cutting reviews for public GitHub repositories, with optional W3C horizontal-review packs.">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap">
+    <p class="eyebrow">FASTER · Open-source prototype. No AI required.</p>
+    <h1>Repository Review Assistant</h1>
+    <p>Start with any public GitHub repository. Choose a review pack, collect traceable evidence and focus on questions that still need human judgment.</p>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="panel" aria-labelledby="intake-heading">
+    <h2 id="intake-heading">1. Select a repository</h2>
+    <form id="intake-form">
+      <div class="form-grid">
+        <div><label for="repository">Public GitHub repository URL</label><input id="repository" type="url" placeholder="https://github.com/owner/repo" required pattern="https://github\.com/[^/]+/[^/]+/?" aria-describedby="repo-help"><p class="help" id="repo-help">Enter the repository root, not an individual file. Public repositories only.</p></div>
+        <div><label for="ref">Branch, tag or commit (optional)</label><input id="ref" placeholder="Default branch"><p class="help">Leaving this blank selects the repository default branch. Evidence links will use the resolved commit SHA.</p></div>
+      </div>
+      <div class="form-grid">
+        <div><label for="target-type">What is being reviewed?</label><select id="target-type"><option value="unspecified">Not sure / not specified</option><option value="application">Application or website</option><option value="library">Library or framework</option><option value="service">Service or API</option><option value="specification">Technology specification</option><option value="dataset">Data project</option><option value="other">Other</option></select></div>
+        <div><label for="preset">Review pack</label><select id="preset" aria-describedby="preset-help"></select><p id="preset-help" class="help">Choose general review probes or an optional standards-specific starter pack.</p></div>
+      </div>
+      <div class="form-grid">
+        <div><label for="review-purpose">Review goal (optional)</label><input id="review-purpose" maxlength="800" placeholder="e.g., release readiness or self-review"></div>
+        <div><label for="document-path">Priority document path (optional)</label><input id="document-path" maxlength="240" placeholder="docs/specification.md" aria-describedby="doc-help"><p class="help" id="doc-help">A relative repository path to prioritize; no file is required.</p></div>
+      </div>
+      <fieldset><legend>Review areas</legend><p class="help">Select relevant cross-cutting subjects. These are preliminary probes, not an official assessment or conformance test.</p><div id="areas" class="areas"></div></fieldset>
+      <label class="checkline"><input id="include-code" type="checkbox"> Also inspect a small sample of implementation code (optional)</label>
+      <div class="actions"><button id="scan-button" type="submit">Analyze repository</button><button id="cancel-button" class="secondary" type="button" disabled>Cancel</button></div>
+    </form>
+    <p id="progress" class="status" role="status" aria-live="polite">No repository inspected yet.</p>
+  </section>
+  <section id="results" hidden aria-labelledby="results-heading">
+    <div class="panel">
+      <h2 id="results-heading">2. Examine evidence and answer outstanding questions</h2>
+      <p id="repo-summary"></p><p id="snapshot-label" class="help"></p>
+      <div id="counts" class="stats" aria-live="polite"></div>
+      <div class="form-grid">
+        <div><label for="area-filter">Review area</label><select id="area-filter"><option value="all">All selected areas</option></select></div>
+        <div><label for="status-filter">Question status</label><select id="status-filter"><option value="all">All questions</option><option value="needs-investigation">Needs investigation</option><option value="met">Met</option><option value="not-met">Not met</option><option value="not-applicable">Not applicable</option></select></div>
+      </div>
+      <label for="question-filter">Find a question</label><input type="search" id="question-filter" placeholder="Search text or question ID">
+      <div id="questions" class="questions"></div>
+    </div>
+    <section class="panel" aria-labelledby="ai-heading">
+      <h2 id="ai-heading">3. Optional AI assistance (bring your own)</h2>
+      <p>Use your preferred AI tool. Export an evidence-limited prompt, then paste its JSON proposals below. Suggestions do not change review decisions until you approve them.</p>
+      <div class="actions"><button id="copy-ai" type="button" class="secondary">Copy AI evidence prompt</button><button id="download-ai" type="button" class="secondary">Download AI evidence prompt</button></div>
+      <details><summary>Paste AI suggestions (JSON)</summary><label for="ai-json">JSON array of suggested answers</label><textarea id="ai-json" rows="7" placeholder='[{"questionId":"A11Y-001","suggestedAnswer":"needs-investigation","explanation":"...","evidenceIds":["A11Y-001-E1"]}]'></textarea><button id="import-ai" type="button">Import unapproved suggestions</button><p class="help">Evidence IDs must exist in the current analysis. External or fabricated citations are rejected.</p></details>
+      <p id="ai-message" role="status" aria-live="polite"></p>
+    </section>
+    <section class="panel" aria-labelledby="export-heading">
+      <h2 id="export-heading">4. Export results</h2>
+      <div class="actions"><button id="download-json" type="button">Download review JSON</button><button id="download-md" type="button" class="secondary">Download GitHub Markdown</button></div>
+      <p class="help">All conclusions remain drafts. Publishing an issue, claiming conformance, or submitting a formal review requires separate human approval outside this starter.</p>
+      <details><summary>Coverage and limitations</summary><ul id="limitations"></ul></details>
+    </section>
+  </section>
+  <section class="panel" aria-labelledby="resume-heading"><h2 id="resume-heading">Open a saved review</h2><label for="load-review">Previously exported review JSON</label><input id="load-review" type="file" accept=".json,application/json"><p class="help">Review data stays in this browser session. Nothing is uploaded to a server.</p></section>
+</main>
+<footer class="wrap site-footer"><p>Experimental review aid. Not an official standards-body service and not a conformance checker. Optional <a href="https://www.w3.org/guide/documentreview/">W3C review guidance</a> | <a href="https://webmachinelearning.github.io/webmcp/">Draft WebMCP API</a> | <a href="https://github.com/mgifford/FASTER">Source (AGPL-3.0)</a>.</p><p id="webmcp-status" class="help" aria-live="polite"></p></footer>
+</body>
+</html>

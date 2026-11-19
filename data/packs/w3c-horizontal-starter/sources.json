@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "reviewAreas": [
+    {"id":"accessibility","title":"Accessibility","formalW3CHorizontalArea":true,"owner":"Accessible Platform Architectures Working Group","authoritativeSources":["https://w3c.github.io/fast/checklist.html","https://w3c.github.io/fast/","https://www.w3.org/guide/documentreview/"],"questionStatus":"unofficial starter probes, not full FAST questions"},
+    {"id":"internationalization","title":"Internationalization","formalW3CHorizontalArea":true,"owner":"Internationalization Working Group","authoritativeSources":["https://www.w3.org/International/i18n-drafts/pages/review-request.en","https://www.w3.org/International/i18n-drafts/techniques/shortchecklist.en"],"questionStatus":"unofficial starter probes, not full i18n checklist"},
+    {"id":"privacy","title":"Privacy","formalW3CHorizontalArea":true,"owner":"Privacy Working Group","authoritativeSources":["https://www.w3.org/TR/security-privacy-questionnaire/"],"questionStatus":"unofficial starter probes, not full questionnaire"},
+    {"id":"security","title":"Security","formalW3CHorizontalArea":true,"owner":"Security Interest Group","authoritativeSources":["https://www.w3.org/TR/security-privacy-questionnaire/"],"questionStatus":"unofficial starter probes, not full questionnaire"},
+    {"id":"architecture","title":"Technical architecture","formalW3CHorizontalArea":true,"owner":"Technical Architecture Group","authoritativeSources":["https://www.w3.org/TR/design-principles/","https://tag.w3.org/workmode/design-reviews/"],"questionStatus":"unofficial starter probes, not TAG review requirements"},
+    {"id":"sustainability","title":"Sustainability (experimental)","formalW3CHorizontalArea":false,"owner":"Community draft, not an official W3C horizontal group","authoritativeSources":["https://www.w3.org/wiki/Sustainability","https://www.w3.org/TR/web-sustainability-guidelines/","https://www.w3.org/TR/ethical-web-principles/"],"questionStatus":"original experimental draft; must not be represented as adopted W3C questions"}
+  ]
+}

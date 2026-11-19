@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "0.2.0",
+  "presets": [
+    {
+      "id": "general",
+      "title": "General cross-cutting review",
+      "description": "Default. Works with applications, libraries, services, repositories, and specification projects. Original non-normative questions.",
+      "kind": "community-starter",
+      "status": "experimental",
+      "sources": "data/packs/general/sources.json",
+      "questions": "data/packs/general/questions.json",
+      "rules": "data/packs/general/rules.json",
+      "defaultAreas": [
+        "accessibility",
+        "internationalization",
+        "privacy",
+        "security",
+        "architecture",
+        "sustainability"
+      ]
+    },
+    {
+      "id": "w3c-horizontal-starter",
+      "title": "W3C horizontal-review preparation (draft)",
+      "description": "Optional W3C-specific triage prompts for five recognized horizontal-review areas plus experimental sustainability. Not authoritative questionnaire text or official group review.",
+      "kind": "w3c-aligned-starter",
+      "status": "unofficial",
+      "sources": "data/packs/w3c-horizontal-starter/sources.json",
+      "questions": "data/packs/w3c-horizontal-starter/questions.json",
+      "rules": "data/packs/w3c-horizontal-starter/rules.json",
+      "defaultAreas": [
+        "accessibility",
+        "internationalization",
+        "privacy",
+        "security",
+        "architecture",
+        "sustainability"
+      ]
+    }
+  ]
+}
