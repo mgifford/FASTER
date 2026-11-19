@@ -17,6 +17,7 @@ Date: 2026-11-19
 - 320 CSS px emulation: `scrollWidth` equals `clientWidth` (320); the file input no longer overflows.
 - Keyboard check via CDP: changing an answer keeps focus on `answer-ACC-001`; changing a rationale keeps focus on `why-ACC-001`; a completed scan moves focus to `results-heading`.
 - Extensionless-document check: `octocat/Hello-World` (`README` with no extension) now analyses 1 document instead of 0.
+- No-document gate: a mocked GitHub tree containing only `index.js` stopped with the "No reviewable documents" guidance and rendered zero questions.
 - Pack version check: the review summary and Markdown export record `v0.2.0`.
 
 ## Not verified
