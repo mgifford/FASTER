@@ -34,10 +34,17 @@ export function safeRepositoryPath(path) {
   return value;
 }
 
+const DOCUMENT_BASENAME = /^(readme|license|licence|copying|copyright|notice|changelog|changes|contributing|code_of_conduct|security|governance|architecture|design|spec|specification|faq|install|building|maintainers|support|authors|contributors|credits|roadmap|requirements|history|news)([._-].*)?$/;
+const CODE_BASENAME = /^(makefile|gnumakefile|dockerfile|containerfile|jenkinsfile|procfile|rakefile|gemfile|podfile|vagrantfile)$/;
+
 export function detectFileType(path) {
-  const name = path.toLowerCase();
-  if (/\.(md|mdx|html?|bs|txt|rst|idl)$/.test(name)) return 'document';
-  if (/\.(css|js|mjs|ts|tsx|jsx|json|webidl)$/.test(name)) return 'code';
+  const name = String(path || '').toLowerCase();
+  if (!name) return null;
+  const base = name.split('/').pop();
+  if (DOCUMENT_BASENAME.test(base)) return 'document';
+  if (CODE_BASENAME.test(base)) return 'code';
+  if (/\.(md|markdown|mdx|html?|xhtml|bs|txt|rst|adoc|asciidoc|org|pod|texi|tex|idl)$/.test(name)) return 'document';
+  if (/\.(css|js|mjs|cjs|ts|tsx|jsx|json|jsonc|webidl|yaml|yml|toml|xml|sql|py|rb|go|rs|java|kt|kts|c|h|cc|cpp|cxx|hpp|cs|php|sh|bash|zsh|fish|ps1|bat|swift|scala|gradle|groovy|ipynb)$/.test(name)) return 'code';
   return null;
 }
 
@@ -45,8 +52,10 @@ export function selectFiles(tree, { includeCode = false, maxDocs = 16, maxCode =
   const files = tree.filter(f => f.type === 'blob' && Number(f.size) > 0 && Number(f.size) <= 140000 && detectFileType(f.path));
   const rank = (f) => {
     const p = f.path.toLowerCase();
+    const base = p.split('/').pop();
     let score = 0;
-    if (/^(index|spec|specification|readme)\./.test(p)) score += 30;
+    if (/^(readme|index|spec|specification)(\.|$)/.test(base)) score += 30;
+    if (/^(license|licence|copying|copyright|notice|changelog|changes|contributing|code_of_conduct|security|governance|architecture|design|faq|install|building|maintainers|support|authors|contributors|credits|roadmap)([._-].*)?$/.test(base)) score += 12;
     if (/(spec|index|architecture|privacy|security|accessib|international|sustain|design|requirements|api)/.test(p)) score += 12;
     if (/^(docs|src|spec|specification)\//.test(p)) score += 5;
     score -= p.split('/').length;
@@ -57,6 +66,10 @@ export function selectFiles(tree, { includeCode = false, maxDocs = 16, maxCode =
   ).slice(0, maxDocs);
   const code = includeCode ? files.filter(f => detectFileType(f.path) === 'code').sort((a,b) => rank(b) - rank(a) || a.path.localeCompare(b.path)).slice(0,maxCode) : [];
   return [...docs, ...code];
+}
+
+export function hasReviewableDocuments(files) {
+  return Array.isArray(files) && files.some(f => f.kind === 'repository-document');
 }
 
 function normalized(text) { return String(text ?? '').toLowerCase(); }
@@ -108,7 +121,7 @@ export function newReview({ repo, sha, selectedAreas, questions, evidence, sourc
     repository: repo,
     commitSha: sha,
     selectedAreas: [...selectedAreas],
-    preset: preset ? {id:preset.id,title:preset.title,kind:preset.kind,status:preset.status} : {id:'legacy',title:'Legacy starter pack',kind:'unspecified',status:'unofficial'},
+    preset: preset ? {id:preset.id,title:preset.title,kind:preset.kind,status:preset.status,version:preset.version || 'unversioned'} : {id:'legacy',title:'Legacy starter pack',kind:'unspecified',status:'unofficial',version:'unversioned'},
     context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240)},
     questionnaireSources: sourceConfig.reviewAreas.filter(a => selectedAreas.includes(a.id)),
     scope: { filesInspected: fileSummary, discussionsInspected: issueSummary, warnings },
@@ -164,7 +177,7 @@ export function toMarkdown(review) {
     `- Commit: \`${review.commitSha}\``,
     `- Generated: ${review.generatedAt}`,
     `- Status: ${review.reviewStatus}`,
-    `- Review pack: ${md(review.preset?.title || 'Not recorded')} (${md(review.preset?.id || 'unknown')}; ${md(review.preset?.status || 'unknown')})`,
+    `- Review pack: ${md(review.preset?.title || 'Not recorded')} (${md(review.preset?.id || 'unknown')}; ${md(review.preset?.status || 'unknown')}; version ${md(review.preset?.version || 'unversioned')})`,
     `- Target type: ${md(review.context?.targetType || 'unspecified')}`,
     `- Review goal: ${md(review.context?.reviewPurpose || 'Not specified')}`,
     `- Requested document: ${md(review.context?.requestedDocument || 'Automatic selection')}`,

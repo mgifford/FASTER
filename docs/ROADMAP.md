@@ -7,7 +7,16 @@
 - [x] Bounded source, issue and PR discovery; line-level candidate snippets with source links.
 - [x] Draft answers, human rationale, separate AI proposals, Markdown/JSON export, saved-review import.
 - [x] Read-only draft WebMCP integration with no-AI normal-browser fallback.
-- [x] Data validation and 12 unit tests.
+- [x] Data validation and 18 unit tests.
+
+## Phase 0 remediation (2026-11-19)
+
+- [x] Answer changes keep keyboard focus; the results heading receives focus after a scan.
+- [x] Muted text meets WCAG 1.4.3 in light and dark themes; 320 px reflow no longer overflows.
+- [x] Extensionless `README`/`LICENSE`/`CHANGELOG` and common text formats are discovered.
+- [x] Analysis stops with guidance when no reviewable document is found.
+- [x] Review packs carry an immutable version through UI, JSON, Markdown and WebMCP.
+- [ ] Remaining baseline findings F6-F16 (evidence caps, rule merging, inventory, provenance).
 
 ## Deployment baseline (2026-11-19)
 

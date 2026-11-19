@@ -8,7 +8,7 @@ Enter **any public GitHub repository**, select a review pack, choose a few scopi
 
 **The default review is general-purpose, not W3C-specific.** A separate, optional W3C-aligned *preparation* pack covers the five existing horizontal-review areas plus draft sustainability questions. Neither pack is an official questionnaire, conformance instrument, audit, or substitute for a standards organization's review process.
 
-> **Pre-release status.** The Phase 0 baseline audit in [`docs/BASELINE.md`](docs/BASELINE.md) records known accessibility blockers (focus loss, contrast, 320 px reflow) and discovery gaps. Do not present this build as an accessibility or conformance checker.
+> **Pre-release status.** Phase 0 fixes for answer focus, contrast, 320 px reflow, extensionless documents and pack-version provenance are implemented. Remaining limitations and the evidence record are in [`docs/BASELINE.md`](docs/BASELINE.md). Do not present this build as an accessibility or conformance checker.
 
 ## Why "FASTER"?
 
@@ -32,7 +32,7 @@ FASTER is the project name; the acronym is a short description, not a standards 
    python3 -m http.server 8000
    ```
 3. Open `http://localhost:8000` in a browser.
-4. Enter a **public GitHub repository root** with a normal `README.md`, for example `https://github.com/chalk/chalk`. Leave the ref blank to use its default branch. Repositories whose only documentation is an extensionless `README` currently yield zero documents; see the known limitation below.
+4. Enter a **public GitHub repository root**, for example `https://github.com/chalk/chalk`. Leave the ref blank to use its default branch. Extensionless `README`, `LICENSE`, `CHANGELOG` and common documentation formats are recognised; if no document can be found, the analysis stops and asks for a document path.
 5. Choose the **General cross-cutting review** pack (selected by default), target type and optional focus. Select review areas, then **Analyze repository**.
 6. Examine candidate evidence and record human decisions. Export draft JSON or Markdown. Optional: download a bounded prompt for an AI of your choice, import suggestions as *unapproved*, and decide whether to accept them.
 
@@ -54,7 +54,7 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Source provenance categories and keyword discovery. Candidate matches **never** mean a question is met, not met or inapplicable.
 - Human decisions and rationales, unapproved AI suggestion import with verified evidence IDs, saved-review JSON import, Markdown and JSON export.
 - Read-only, feature-detected draft browser WebMCP tools (`document.modelContext`), with functional normal-browser fallback.
-- Data pack registry, validation scripts, **12 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Known accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
+- Data pack registry with explicit pack versions, validation scripts, **18 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
 - GitHub Pages deployment through GitHub Actions, gated by the `npm run check` CI job.
 
 ## Not implemented
@@ -64,7 +64,7 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - High-quality semantic evidence extraction, code execution, real-world accessibility testing, energy testing, a built-in or local AI model, or direct AI provider calls.
 - Automated answer approval, quantitative LLM confidence calibration, review-comparison across commits, server-side caching, GitHub authentication/private repository access, or write-back to GitHub.
 - A conventional **remote** MCP server. GitHub Pages cannot host one; a Cloudflare Worker is the planned optional Phase 6 backend. Browser WebMCP is not a remote MCP endpoint and is not itself an AI model.
-- Complete browser-based accessibility QA. Automated unit tests pass; live testing with diverse assistive technologies is still required. The Phase 0 audit documents the currently known failures.
+- Complete browser-based accessibility QA. Unit tests and headless axe checks pass for the Phase 0 blockers; live testing with diverse assistive technologies is still required. Remaining limitations are recorded in [`docs/BASELINE.md`](docs/BASELINE.md).
 
 ## Deployment
 
@@ -106,7 +106,7 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 
 ## What to build next
 
-The most valuable next milestone is a **source inventory and document selector**, followed by higher-quality evidence extraction and change-based reviews. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for a sequential roadmap, concrete tests and stop conditions. Fix the Phase 0 blockers in [`docs/BASELINE.md`](docs/BASELINE.md) before presenting the site as accessible.
+The most valuable next milestone is a **visible source inventory and multi-document selector**, followed by higher-quality evidence extraction and change-based reviews. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for a sequential roadmap, concrete tests and stop conditions. The remaining baseline findings (F6-F16) are tracked in [`docs/BASELINE.md`](docs/BASELINE.md); the fixed Phase 0 items are recorded there too.
 
 ## License, source and authority
 

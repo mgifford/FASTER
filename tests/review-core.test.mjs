@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseGitHubUrl,safeRef,safeRepositoryPath,selectFiles,findEvidence,newReview,applyReviewerDecision,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
+import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
 const question={id:'A11Y-001',area:'accessibility',prompt:'Accessible name?',why:'Meaningful names.'};
 const cfg={reviewAreas:[{id:'accessibility',title:'Accessibility'}]};
 function fixtureReview(){
@@ -58,4 +58,28 @@ test('Review tracks generic preset, scoping metadata, discussions and provenance
   assert.ok(review.questions[0].evidence.some(x=>x.sourceAuthority==='discussion-only'));
   assert.equal(review.questions[0].answer,'needs-investigation');
   assert.match(toAIPrompt(review),/DRAFT evidence-assisted repository review/);
+});
+
+test('Extensionless conventional documents and additional text formats are discovered',()=>{
+  for(const path of ['README','LICENSE','CODE_OF_CONDUCT','CHANGELOG','docs/guide.adoc','docs/notes.org','README-MIT']) assert.equal(detectFileType(path),'document');
+  assert.equal(detectFileType('Makefile'),'code');
+  const tree=[
+    {path:'README',size:13,type:'blob'},
+    {path:'LICENSE',size:20,type:'blob'},
+    {path:'CODE_OF_CONDUCT',size:30,type:'blob'},
+    {path:'docs/guide.adoc',size:40,type:'blob'},
+    {path:'Makefile',size:50,type:'blob'},
+    {path:'package.json',size:60,type:'blob'}
+  ];
+  assert.deepEqual(selectFiles(tree).map(f=>f.path).sort(),['CODE_OF_CONDUCT','LICENSE','README','docs/guide.adoc']);
+  assert.equal(hasReviewableDocuments([{kind:'implementation-code'}]),false);
+  assert.equal(hasReviewableDocuments([{kind:'repository-document'}]),true);
+});
+
+test('Review preserves and exports the question-pack version',()=>{
+  const review=fixtureReview();
+  review.preset={id:'general',title:'General cross-cutting review',kind:'community-starter',status:'experimental',version:'0.2.0'};
+  assert.equal(review.preset.version,'0.2.0');
+  assert.match(toMarkdown(review),/version 0\.2\.0/);
+  assert.match(toAIPrompt(review),/"version": "0\.2\.0"/);
 });

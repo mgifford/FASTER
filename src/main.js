@@ -1,5 +1,5 @@
 import { inspectRepository } from './github.js';
-import { findEvidence, newReview, applyReviewerDecision, validateAIProposals, toMarkdown, toAIPrompt } from './review-core.js';
+import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, toMarkdown, toAIPrompt } from './review-core.js';
 import { registerWebMCP } from './webmcp.js';
 
 const $ = id => document.getElementById(id);
@@ -48,7 +48,7 @@ async function loadPreset(presetId) {
     input.checked=preset.defaultAreas.includes(area.id); input.name='review-area';
     label.append(input,node('span',area.title)); $('areas').append(label);
   }
-  $('preset-help').textContent=`${preset.description} Pack status: ${preset.status}.`;
+  $('preset-help').textContent=`${preset.description} Pack status: ${preset.status}. Version: ${preset.version || 'unversioned'}.`;
 }
 
 async function init() {
@@ -99,6 +99,10 @@ async function startAnalysis(ev) {
     const reviewPurpose=$('review-purpose').value.trim();
     const requestedDocument=$('document-path').value.trim();
     const snapshot=await inspectRepository($('repository').value,$('ref').value,{includeCode:$('include-code').checked,preferredDocumentPath:requestedDocument,signal:controller.signal,onProgress:updateMessage});
+    if (!hasReviewableDocuments(snapshot.files)) {
+      updateMessage(`No reviewable documents were found in the sampled repository.${requestedDocument ? ` The requested path "${requestedDocument}" was not selected.` : ''} Add a priority document path or choose a repository with a README or other documentation.`);
+      return;
+    }
     const relevant=currentConfig.questions.questions.filter(q=>areas.includes(q.area));
     const evidence=findEvidence({files:snapshot.files,issues:snapshot.issues,rules:currentConfig.rules.rules,questions:relevant,repoUrl:snapshot.repo.url,sha:snapshot.sha});
     review=newReview({repo:snapshot.repo,sha:snapshot.sha,selectedAreas:areas,questions:relevant,evidence,sourceConfig:currentConfig.sources,fileSummary:snapshot.files.map(f=>f.path),issueSummary:snapshot.issues.map(i=>`${i.kind} #${i.number} (${i.state || 'unknown'})`),warnings:snapshot.warnings,preset:currentConfig.preset,context:{targetType,reviewPurpose,requestedDocument}});
@@ -112,13 +116,15 @@ function showReview() {
   if(!review)return;
   $('results').hidden=false;
   $('repo-summary').replaceChildren(makeLink(review.repository.url,review.repository.url));
-  $('snapshot-label').textContent=`Review pack: ${review.preset?.title || 'Legacy starter'}. Target: ${review.context?.targetType || 'unspecified'}. Pinned commit: ${review.commitSha}. Generated: ${review.generatedAt}. Status: draft, not a conformance determination.`;
+  const packVersion=review.preset?.version&&review.preset.version!=='unversioned'?` (v${review.preset.version})`:'';
+  $('snapshot-label').textContent=`Review pack: ${review.preset?.title || 'Legacy starter'}${packVersion}. Target: ${review.context?.targetType || 'unspecified'}. Pinned commit: ${review.commitSha}. Generated: ${review.generatedAt}. Status: draft, not a conformance determination.`;
   $('area-filter').replaceChildren(node('option','All selected areas'));
   $('area-filter').firstChild.value='all';
   for(const area of review.questionnaireSources){const opt=node('option',area.title);opt.value=area.id;$('area-filter').append(opt);}
   $('status-filter').value='all';$('question-filter').value='';
   $('limitations').replaceChildren(...(review.scope?.warnings || []).map(w=>node('li',w)));
   updateCounts();renderQuestions();
+  $('results-heading').focus();
 }
 
 function updateCounts() {
@@ -158,20 +164,44 @@ function renderQuestion(q) {
   if(q.aiProposal){
     const proposal=node('section',null,'ai-proposal');proposal.append(node('strong',`Unapproved AI suggestion: ${statusLabel(q.aiProposal.suggestedAnswer)}`),node('p',q.aiProposal.explanation),node('p',`Cites: ${q.aiProposal.evidenceIds.join(', ') || 'none'}`,'meta'));
     const approve=node('button','Apply suggestion as human decision','secondary');approve.type='button';approve.addEventListener('click',()=>{
+      const current=review.questions.find(x=>x.id===q.id)||q;
       const answer=q.aiProposal.suggestedAnswer;const why=`Reviewer accepted AI proposal: ${q.aiProposal.explanation}`;
-      replaceQuestion(q.id,applyReviewerDecision(q,answer,why));
+      const next={...applyReviewerDecision(current,answer,why),aiProposal:null};
+      review.questions=review.questions.map(x=>x.id===q.id?next:x);
+      updateCounts();updateQuestionCard(next);proposal.remove();
+      document.getElementById(`answer-${q.id}`)?.focus();
     });proposal.append(approve);article.append(proposal);
   }
   const edit=node('div',null,'review-inputs');
   const selHolder=node('div');const label=node('label','Review answer');const select=node('select');label.htmlFor=`answer-${q.id}`;select.id=label.htmlFor;
   for(const value of ['needs-investigation','met','not-met','not-applicable']){const option=node('option',statusLabel(value));option.value=value;select.append(option);}select.value=q.answer;
-  select.addEventListener('change',()=>replaceQuestion(q.id,applyReviewerDecision(q,select.value,q.reviewerRationale)));
+  select.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,select.value,current.reviewerRationale));});
   selHolder.append(label,select);
-  const whyHolder=node('div');const rationaleLabel=node('label','Reviewer rationale / outstanding question');const rationale=node('textarea');rationale.id=`why-${q.id}`;rationale.rows=3;rationale.value=q.reviewerRationale;rationaleLabel.htmlFor=rationale.id;rationale.addEventListener('change',()=>replaceQuestion(q.id,applyReviewerDecision(q,q.answer,rationale.value)));whyHolder.append(rationaleLabel,rationale);
+  const whyHolder=node('div');const rationaleLabel=node('label','Reviewer rationale / outstanding question');const rationale=node('textarea');rationale.id=`why-${q.id}`;rationale.rows=3;rationale.value=q.reviewerRationale;rationaleLabel.htmlFor=rationale.id;rationale.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,current.answer,rationale.value));});whyHolder.append(rationaleLabel,rationale);
   edit.append(selHolder,whyHolder);article.append(edit);
   return article;
 }
-function replaceQuestion(id,next){review.questions=review.questions.map(q=>q.id===id?next:q);updateCounts();renderQuestions();}
+function updateQuestionCard(q){
+  const article=document.getElementById(`question-${q.id}`);
+  if(!article)return;
+  const badge=article.querySelector('.badge-text');
+  if(badge)badge.textContent=q.reviewState==='human-reviewed'?'Human reviewed':'Not yet reviewed';
+  const select=document.getElementById(`answer-${q.id}`);
+  if(select)select.value=q.answer;
+  const rationale=document.getElementById(`why-${q.id}`);
+  if(rationale&&document.activeElement!==rationale)rationale.value=q.reviewerRationale;
+}
+function replaceQuestion(id,next){
+  review.questions=review.questions.map(q=>q.id===id?next:q);
+  updateCounts();updateQuestionCard(next);
+  const status=$('status-filter').value;
+  if(status!=='all'&&next.answer!==status){
+    const activeId=document.activeElement?.id;
+    renderQuestions();
+    const target=activeId?document.getElementById(activeId):null;
+    (target||$('status-filter')).focus();
+  }
+}
 function importAISuggestions(){
   try {
     if(!review)throw Error('Analyze a repository first.');

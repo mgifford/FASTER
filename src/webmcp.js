@@ -14,7 +14,7 @@ export async function registerWebMCP(getReview, getPresetRegistry = () => []) {
       inputSchema:{type:'object',properties:{},additionalProperties:false},
       annotations:{readOnlyHint:true},
       async execute() {
-        return {packs:getPresetRegistry().map(p => ({id:p.id,title:p.title,status:p.status,kind:p.kind}))};
+        return {packs:getPresetRegistry().map(p => ({id:p.id,title:p.title,status:p.status,kind:p.kind,version:p.version||'unversioned'}))};
       }
     },
     {
