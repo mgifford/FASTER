@@ -122,6 +122,7 @@ function showReview() {
   $('area-filter').firstChild.value='all';
   for(const area of review.questionnaireSources){const opt=node('option',area.title);opt.value=area.id;$('area-filter').append(opt);}
   $('status-filter').value='all';$('question-filter').value='';
+  $('ai-json').value='';$('ai-message').textContent='';
   $('limitations').replaceChildren(...(review.scope?.warnings || []).map(w=>node('li',w)));
   updateCounts();renderQuestions();
   $('results-heading').focus();
@@ -169,6 +170,7 @@ function renderQuestion(q) {
       const next={...applyReviewerDecision(current,answer,why),aiProposal:null};
       review.questions=review.questions.map(x=>x.id===q.id?next:x);
       updateCounts();updateQuestionCard(next);proposal.remove();
+      $('ai-message').textContent='Suggestion applied as a human decision; the rationale records the AI origin.';
       document.getElementById(`answer-${q.id}`)?.focus();
     });proposal.append(approve);article.append(proposal);
   }
