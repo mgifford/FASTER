@@ -10,7 +10,7 @@ Date: 2026-11-19
 - Local HTTP smoke check: `index.html`, JS modules, pack registry and both question-pack JSON files returned status 200 with non-empty bodies.
 - JavaScript syntax checks: entry modules and core API code parsed successfully with Node.
 
-## Post-audit verification (2026-11-19, after Phase 0 fixes)
+## Post-audit verification (2026-11-19, after Phase 0 fixes in PR #1)
 
 - Node 22.20.0: `npm run check` passes, 18/18 tests, both packs validate with versions.
 - Headless Chrome 157.0.8103.79 with axe-core 4.10.3: intake and post-scan axe runs report **0 violations**.

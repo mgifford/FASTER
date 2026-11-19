@@ -7,7 +7,8 @@ Status: **review complete; Phase 0 findings recorded; F1-F5 remediated; Phase 1 
 > **Post-audit updates (2026-11-19):** the project is now a git repository at
 > `https://github.com/mgifford/FASTER`, licensed **AGPL-3.0-only** (it was MIT during the
 > audit), with a CI check workflow and `docs/DEPLOYMENT.md`. The findings below still describe
-> the audited v0.2 code; only the VCS and license notes are now historical. See `CHANGELOG.md`.
+> the audited v0.2 code; only the VCS and license notes are now historical. The F1-F5 fixes
+> landed in pull request #1 (commit `3adafd0`). See `CHANGELOG.md`.
 
 ### Remediation status (post-audit)
 
