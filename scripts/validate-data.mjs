@@ -12,7 +12,10 @@ const presetIds=new Set();
 for(const preset of registry.presets){
   if(!/^[a-z][a-z0-9-]+$/.test(preset.id)||presetIds.has(preset.id))throw Error(`Invalid or duplicate preset ${preset.id}`);
   presetIds.add(preset.id);
-  const sources=read(preset.sources), {questions}=read(preset.questions), {rules}=read(preset.rules);
+  if(!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(preset.version||''))throw Error(`Missing or invalid pack version in ${preset.id}`);
+  const sources=read(preset.sources), questionsFile=read(preset.questions), rulesFile=read(preset.rules);
+  const {questions}=questionsFile, {rules}=rulesFile;
+  if([sources.version,questionsFile.version,rulesFile.version].some(v=>v!==preset.version))throw Error(`Pack version mismatch in ${preset.id}`);
   const areas=new Set(sources.reviewAreas.map(a=>a.id));
   if(areas.size!==sources.reviewAreas.length)throw Error(`Duplicate area ID in ${preset.id}`);
   if(preset.defaultAreas.some(a=>!areas.has(a)))throw Error(`Invalid default area in ${preset.id}`);
@@ -30,5 +33,5 @@ for(const preset of registry.presets){
     if(sources.reviewAreas.filter(a=>a.formalW3CHorizontalArea===true).length!==5)throw Error('W3C starter must keep exactly five formal review areas');
     if(!sources.reviewAreas.find(a=>a.id==='sustainability'&&a.formalW3CHorizontalArea===false))throw Error('Sustainability must remain experimental');
   }
-  console.log(`${preset.id}: valid ${areas.size} areas, ${ids.size} questions, ${ruleIds.size} rules.`);
+  console.log(`${preset.id} (${preset.version}): valid ${areas.size} areas, ${ids.size} questions, ${ruleIds.size} rules.`);
 }

@@ -4,7 +4,7 @@
 
 `data/presets.json` lists installed packs. Each pack provides:
 
-- `id`, `title`, `kind`, `status`, `description`.
+- `id`, `version`, `title`, `kind`, `status`, `description`.
 - `sources`: explanatory authority and reference links per review area.
 - `questions`: original exploratory prompts with IDs, area, prompt and rationale.
 - `rules`: deterministic search phrases keyed to IDs.
@@ -43,7 +43,7 @@ The exported review JSON includes:
   "generatedAt": "2026-11-19T00:00:00.000Z",
   "repository": {"url": "https://github.com/owner/repository"},
   "commitSha": "<resolved-commit>",
-  "preset": {"id": "general", "status": "experimental"},
+  "preset": {"id": "general", "title": "General cross-cutting review", "kind": "community-starter", "status": "experimental", "version": "0.2.0"},
   "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": ""},
   "selectedAreas": ["accessibility", "security"],
   "scope": {"filesInspected": [], "discussionsInspected": [], "warnings": []},

@@ -6,7 +6,9 @@
 - Relicensed original code and original questions from MIT to **AGPL-3.0-only**; added `NOTICE`, a source-offer link in the site footer and deployment guidance.
 - Added a pull-request `Check` workflow and made the GitHub Pages deploy depend on `npm run check`.
 - Added `docs/DEPLOYMENT.md` for GitHub Pages, AGPL section 13, custom domains and the deferred Cloudflare MCP service.
-- Recorded the Phase 0 audit in `docs/BASELINE.md`; no Phase 0 accessibility or discovery fixes are included in this change.
+- Recorded the Phase 0 audit in `docs/BASELINE.md`.
+- Fixed Phase 0 blockers F1-F5: answer changes keep keyboard focus and scans focus the results heading; muted text uses a contrast-safe adaptive token; the file input no longer overflows at 320 CSS px; extensionless `README`/`LICENSE`/`CHANGELOG` and more text formats are discovered; analysis stops with guidance when no reviewable document exists; review packs carry an immutable version through UI, JSON, Markdown and WebMCP.
+- Expanded the test suite from 12 to 18 tests, including UI/contrast/reflow guards and pack-version consistency.
 
 ## 0.2.0 - Generic-first consolidation (2026-11-19)
 

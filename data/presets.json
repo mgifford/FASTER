@@ -17,7 +17,8 @@
         "security",
         "architecture",
         "sustainability"
-      ]
+      ],
+      "version": "0.2.0"
     },
     {
       "id": "w3c-horizontal-starter",
@@ -35,7 +36,8 @@
         "security",
         "architecture",
         "sustainability"
-      ]
+      ],
+      "version": "0.1.0"
     }
   ]
 }

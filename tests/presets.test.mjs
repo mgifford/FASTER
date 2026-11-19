@@ -11,6 +11,14 @@ test('General pack is the default and not tied to a standards organization',()=>
   assert.equal(read(general.questions).questions.length,20);
   assert.equal(read(general.sources).reviewAreas.some(a=>a.formalW3CHorizontalArea===true),false);
 });
+test('Every pack declares a version matching its data files',()=>{
+  for(const preset of registry.presets){
+    assert.match(preset.version,/^\d+\.\d+\.\d+/);
+    assert.equal(read(preset.sources).version,preset.version);
+    assert.equal(read(preset.questions).version,preset.version);
+    assert.equal(read(preset.rules).version,preset.version);
+  }
+});
 test('W3C preparation pack is optional and has five formal areas plus experimental sustainability',()=>{
   const a=read(w3c.sources).reviewAreas;
   assert.equal(a.filter(x=>x.formalW3CHorizontalArea).length,5);

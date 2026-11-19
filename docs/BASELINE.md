@@ -2,12 +2,23 @@
 
 Date: 2026-11-19
 Reviewer: AI coding agent (lead)
-Status: **review complete; Phase 0 findings recorded; Phase 1 not started. No runtime code changed during the audit.**
+Status: **review complete; Phase 0 findings recorded; F1-F5 remediated; Phase 1 not started. No runtime code changed during the audit.**
 
 > **Post-audit updates (2026-11-19):** the project is now a git repository at
 > `https://github.com/mgifford/FASTER`, licensed **AGPL-3.0-only** (it was MIT during the
 > audit), with a CI check workflow and `docs/DEPLOYMENT.md`. The findings below still describe
 > the audited v0.2 code; only the VCS and license notes are now historical. See `CHANGELOG.md`.
+
+### Remediation status (post-audit)
+
+| Finding | Status | Evidence |
+| --- | --- | --- |
+| F1 focus loss / no focus after scan | **Fixed** | `src/main.js` updates one card in place and focuses `#results-heading`; CDP check retained `answer-ACC-001` and `why-ACC-001` focus. |
+| F2 contrast | **Fixed** | `--muted` now uses `color-mix(in srgb,CanvasText 65%,Canvas)`; axe reports 0 violations on intake and results. |
+| F3 320 px reflow | **Fixed** | File input is width-constrained; `scrollWidth` equals `clientWidth` at 320 px. |
+| F4 extensionless docs / no-document gate | **Fixed** | Extensionless `README`, `LICENSE`, `CHANGELOG` etc. and more formats are discovered; `hasReviewableDocuments()` stops analysis with guidance when none are found. |
+| F5 pack version | **Fixed** | `version` is required in the registry/validator and carried through UI, JSON, Markdown and WebMCP. |
+| F6-F16 | **Open** | Tracked below; Phase 1 discovery and evidence-quality work remains. |
 
 
 This document is the Phase 0 artifact requested by `docs/IMPLEMENTATION_PROMPT.md` §4 and
@@ -82,8 +93,7 @@ w3c-horizontal-starter: valid 6 areas, 22 questions, 22 rules.
 # fail 0
 ```
 
-The data validator and all 12 Node tests pass. This matches the `README.md` claim of 12
-tests, but not `docs/ROADMAP.md`, which still says 10 (see F16).
+The data validator and all 12 Node tests passed at audit time (the suite now has 18 tests after the Phase 0 regression tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
 
 ### Tests that were not in the repository
 
@@ -399,7 +409,7 @@ Phase 1 §5.1-5.4 is **not met**:
 | Phase 1 requirement | Status |
 | --- | --- |
 | 5.1 repository preflight, default branch/SHA, description/topics/license/language | Partial: branch/SHA/description only; no topics/license/language; no type suggestion/confirmation; no monorepo scope |
-| 5.2 bounded source inventory, canonical docs, selected/skipped reasons, counts | Not met: extension-based ranking only; one optional path; no inventory UI; silent skips; no no-document gate |
+| 5.2 bounded source inventory, canonical docs, selected/skipped reasons, counts | Partial: extensionless docs and a no-document gate are now implemented; still one optional path, no inventory UI, no selected/skipped counts or reasons |
 | 5.3 history/issues: merged status verified, labels, timestamps, comment links, cautious README claims | Partial: recent issues/PRs fetched; merged status dropped; no labels/timestamps/comments; no claim comparison |
 | 5.4 non-W3C pilot with exact SHA, ≥10 human-labelled passages for two areas, false positives/misses | **Not started**; no pilot record, no labelled fixtures, no precision/recall |
 
@@ -408,11 +418,11 @@ human-labelled passages.
 
 Recommended sequence before Phase 1 acceptance:
 
-1. Fix F1-F4 (focus, contrast, 320 px reflow, extensionless/no-document handling) and add
-   automated checks for them.
-2. Add pack version (F5) and decision timestamp/origin (F15) to the model and exports.
+1. **Completed (2026-11-19):** F1-F5 are fixed and covered by tests; `npm run check` is now
+   the PR/Pages gate.
+2. Next: add decision timestamp/origin (F15) and the remaining provenance fields.
 3. Fix F6-F9 (rule merge, evidence diversity, matching quality, structural AI truncation)
-   and add the missing tests plus a CI `npm run check` job (F13).
+   and add the remaining adapter/DOM tests.
 4. Build the visible inventory and preflight metadata (F10-F12): selected/discovered/skipped
    counts, per-file reasons, multi-select target documents, type suggestion with confirmation.
 5. Run the first non-W3C pilot with a recorded SHA and at least 10 independently labelled
