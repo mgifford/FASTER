@@ -32,8 +32,8 @@ FASTER is the project name; the acronym is a short description, not a standards 
    python3 -m http.server 8000
    ```
 3. Open `http://localhost:8000` in a browser.
-4. Enter a **public GitHub repository root**, for example `https://github.com/chalk/chalk`. Leave the ref blank to use its default branch. Extensionless `README`, `LICENSE`, `CHANGELOG` and common documentation formats are recognised; if no document can be found, the analysis stops and asks for a document path.
-5. Choose the **General cross-cutting review** pack (selected by default), target type and optional focus. Select review areas, then **Analyze repository**.
+4. Enter a **public GitHub repository root**, for example `https://github.com/chalk/chalk`. Leave the ref blank to use its default branch. Extensionless `README`, `LICENSE`, `CHANGELOG` and common documentation formats are recognised; if no document can be found, discovery stops and asks for a document path.
+5. Choose the **General cross-cutting review** pack (selected by default), target type and optional focus. Select review areas, then **Discover repository**. Review the committed inventory, confirm or apply the suggested project type, select up to 16 documents, then **Analyze selected documents**.
 6. Examine candidate evidence and record human decisions. Export draft JSON or Markdown. Optional: download a bounded prompt for an AI of your choice, import suggestions as *unapproved*, and decide whether to accept them.
 
 Run validation and unit tests (Node 20+):
@@ -50,11 +50,13 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Optional W3C-aligned starter pack: **22 original exploratory questions and 22 rules**, with the five formal W3C horizontal-review areas clearly distinguished from experimental sustainability.
 - Dynamic pack selector and scoping inputs (repository, default branch or specified ref, target type, goal, priority document, selected review areas, optional code sample).
 - Pinned SHA for repository file citations; relative path and GitHub URL validation.
-- Bounded retrieval of **up to 16 repository documents, 4 code files, 20 issues, and 10 PRs**. GitHub requests may fail or be rate-limited; the UI reports limitations.
+- Bounded retrieval: discovery returns a ranked inventory with selected/skipped counts, file sizes, reasons and tree-truncation warnings; analysis fetches **up to 16 selected documents, 4 code files, 20 issues, and 10 PRs**. GitHub requests may fail or be rate-limited; the UI reports the remaining API budget.
 - Source provenance categories and keyword discovery. Candidate matches **never** mean a question is met, not met or inapplicable.
 - Human decisions and rationales, unapproved AI suggestion import with verified evidence IDs, saved-review JSON import, Markdown and JSON export.
 - Read-only, feature-detected draft browser WebMCP tools (`document.modelContext`), with functional normal-browser fallback.
-- Data pack registry with explicit pack versions, validation scripts, **18 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
+- Project metadata and a transparent project-type suggestion (never auto-confirmed); the reviewer applies it explicitly.
+- Issue/PR samples include labels, timestamps and verified merged status where available; mutable-source warnings remain.
+- Data pack registry with explicit pack versions, validation scripts, **25 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
 - GitHub Pages deployment through GitHub Actions, gated by the `npm run check` CI job.
 
 ## Not implemented
@@ -88,6 +90,7 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 | `.github/workflows/` | CI check and GitHub Pages deployment |
 | `docs/IMPLEMENTATION_PROMPT.md` | **Full consolidated handoff prompt**, phased implementation and acceptance criteria |
 | `docs/BASELINE.md` | Phase 0 audit, known limitations and remediation priority |
+| `docs/PILOT.md` | Preliminary Django security/i18n pilot and labelled evidence |
 | `docs/DEPLOYMENT.md` | GitHub Pages, AGPL source offer and future Cloudflare MCP plan |
 | `docs/` | Architecture, UX, data schemas, governance, security, WebMCP, AI and roadmap |
 | `AGENTS.md` | Instructions for coding agents |
@@ -106,7 +109,7 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 
 ## What to build next
 
-The most valuable next milestone is a **visible source inventory and multi-document selector**, followed by higher-quality evidence extraction and change-based reviews. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for a sequential roadmap, concrete tests and stop conditions. The remaining baseline findings (F6-F16) are tracked in [`docs/BASELINE.md`](docs/BASELINE.md); the fixed Phase 0 items are recorded there too.
+The most valuable next step is the **first non-W3C labelled pilot** against the new inventory, followed by structured evidence extraction (word-boundary/normative parsing), canonical/published-document detection and review continuity. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for the sequential roadmap. The remaining baseline findings (F8, F13-F16) are tracked in [`docs/BASELINE.md`](docs/BASELINE.md).
 
 ## License, source and authority
 

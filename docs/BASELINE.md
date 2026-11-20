@@ -2,7 +2,7 @@
 
 Date: 2026-11-19
 Reviewer: AI coding agent (lead)
-Status: **review complete; Phase 0 findings recorded; F1-F5 remediated; Phase 1 not started. No runtime code changed during the audit.**
+Status: **review complete; Phase 0 findings recorded; F1-F5 and F6/F7/F9 remediated; Phase 1 discovery implemented and a preliminary pilot recorded. Human label confirmation is pending. No runtime code changed during the audit.**
 
 > **Post-audit updates (2026-11-19):** the project is now a git repository at
 > `https://github.com/mgifford/FASTER`, licensed **AGPL-3.0-only** (it was MIT during the
@@ -19,7 +19,17 @@ Status: **review complete; Phase 0 findings recorded; F1-F5 remediated; Phase 1 
 | F3 320 px reflow | **Fixed** | File input is width-constrained; `scrollWidth` equals `clientWidth` at 320 px. |
 | F4 extensionless docs / no-document gate | **Fixed** | Extensionless `README`, `LICENSE`, `CHANGELOG` etc. and more formats are discovered; `hasReviewableDocuments()` stops analysis with guidance when none are found. |
 | F5 pack version | **Fixed** | `version` is required in the registry/validator and carried through UI, JSON, Markdown and WebMCP. |
-| F6-F16 | **Open** | Tracked below; Phase 1 discovery and evidence-quality work remains. |
+| F6 multiple rules per question | **Fixed** | Phrases are merged per question; regression test added. |
+| F7 evidence cap starves discussion | **Fixed** | Round-robin document/discussion/code selection, with a discussion slot when present; regression test added. |
+| F8 substring matching false positives | **Open** | Structured/word-boundary matching remains Phase 2 work. |
+| F9 AI prompt truncation | **Fixed** | Structurally bounded evidence bundle, valid JSON, prompt warnings and omitted counts; test covers 1,000 questions. |
+| F10 inventory not visible | **Fixed** | Discovery renders selected/skipped counts, sizes, reasons, skipped-file limits and a 16-document selector. |
+| F11 preflight metadata/type suggestion | **Partial** | Metadata, API budget and an explicit type suggestion/confirmation are implemented; monorepo scoping and canonical/published-doc detection are not. |
+| F12 issue/PR provenance | **Partial** | Labels, timestamps and verified merged status are carried into evidence; comment links, claim comparison and UI history views remain. |
+| F13 test coverage / CI | **Partial** | 25 tests plus CI; no adapter fetch-mock or DOM integration suite yet. |
+| F14 imported-data binding | **Open** | Saved-review validation and repository-bound AI proposals remain. |
+| F15 decision provenance | **Open** | Reviewer identity, decision timestamp/origin and sign-off remain. |
+| F16 rate limits/retry | **Partial** | Remaining API budget is displayed and pack switching is guarded; no retry, cache or secondary-limit handling. |
 
 
 This document is the Phase 0 artifact requested by `docs/IMPLEMENTATION_PROMPT.md` §4 and
@@ -94,7 +104,7 @@ w3c-horizontal-starter: valid 6 areas, 22 questions, 22 rules.
 # fail 0
 ```
 
-The data validator and all 12 Node tests passed at audit time (the suite now has 18 tests after the Phase 0 regression tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
+The data validator and all 12 Node tests passed at audit time (the suite now has 25 tests after the Phase 0 and Phase 1 regression tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
 
 ### Tests that were not in the repository
 
@@ -405,33 +415,32 @@ Confirmed by reading and live testing:
 
 ## 7. Phase 1 readiness
 
-Phase 1 §5.1-5.4 is **not met**:
+Phase 1 §5.1-5.4 is **partially met**:
 
 | Phase 1 requirement | Status |
 | --- | --- |
-| 5.1 repository preflight, default branch/SHA, description/topics/license/language | Partial: branch/SHA/description only; no topics/license/language; no type suggestion/confirmation; no monorepo scope |
-| 5.2 bounded source inventory, canonical docs, selected/skipped reasons, counts | Partial: extensionless docs and a no-document gate are now implemented; still one optional path, no inventory UI, no selected/skipped counts or reasons |
-| 5.3 history/issues: merged status verified, labels, timestamps, comment links, cautious README claims | Partial: recent issues/PRs fetched; merged status dropped; no labels/timestamps/comments; no claim comparison |
-| 5.4 non-W3C pilot with exact SHA, ≥10 human-labelled passages for two areas, false positives/misses | **Not started**; no pilot record, no labelled fixtures, no precision/recall |
+| 5.1 repository preflight, default branch/SHA, description/topics/license/language | Partial: metadata, pinned SHA and an explicit type suggestion/confirmation are implemented; no monorepo subdirectory scope |
+| 5.2 bounded source inventory, canonical docs, selected/skipped reasons, counts | Partial: ranked inventory, counts, reasons and multi-select are implemented; canonical/published-document detection is not |
+| 5.3 history/issues: merged status verified, labels, timestamps, comment links, cautious README claims | Partial: labels/timestamps/merged state are carried; comment links, UI history views and README-claim comparison are not |
+| 5.4 non-W3C pilot with exact SHA, ≥10 human-labelled passages for two areas, false positives/misses | **Preliminary**: Django pilot at `c67d872…` in `docs/PILOT.md` with 25 AI-assisted labels, 70% precision and 74% recall; independent human confirmation pending |
 
-The `chalk/chalk` scan is a useful smoke test, not a pilot: it has no answer key and no
-human-labelled passages.
+The `docs/PILOT.md` Django run is a preliminary pilot: its labels are AI-assisted and need
+independent human confirmation before they count as Phase 1 acceptance evidence.
 
 Recommended sequence before Phase 1 acceptance:
 
-1. **Completed (2026-11-19):** F1-F5 are fixed and covered by tests; `npm run check` is now
-   the PR/Pages gate.
-2. Next: add decision timestamp/origin (F15) and the remaining provenance fields.
-3. Fix F6-F9 (rule merge, evidence diversity, matching quality, structural AI truncation)
-   and add the remaining adapter/DOM tests.
-4. Build the visible inventory and preflight metadata (F10-F12): selected/discovered/skipped
-   counts, per-file reasons, multi-select target documents, type suggestion with confirmation.
-5. Run the first non-W3C pilot with a recorded SHA and at least 10 independently labelled
-   relevant/irrelevant passages for two areas; report citation precision, recall, false
-   positives, misses and rate-limit behaviour. Do not call it a pilot until that answer key
-   exists.
-6. Update `README.md`, `docs/ROADMAP.md`, `docs/AI_AND_MCP.md`, `LICENSE`, and this baseline
-   as the fixes land. Stop before Phase 2.
+1. **Completed:** F1-F5, F6, F7 and F9 are fixed and covered by tests; `npm run check` is the
+   PR/Pages gate.
+2. **Completed:** discovery inventory, metadata, explicit type suggestion/confirmation and
+   issue/PR label/timestamp/merged-state provenance.
+3. **Preliminary pilot recorded:** `docs/PILOT.md` covers Django security/i18n at a pinned
+   SHA with 25 AI-assisted labels, 70% precision and 74% recall. Next: independent human
+   confirmation and a second repository with a different documentation shape.
+4. Add decision timestamp/origin (F15), saved-review/AI binding (F14), structured matching
+   (F8), adapter/DOM tests (F13) and rate-limit retry/cache (F16).
+5. Add canonical/published-document detection and monorepo scoping.
+6. Keep `README.md`, `docs/ROADMAP.md`, `docs/QA_REPORT.md` and this baseline current. Stop
+   before Phase 2.
 
 ## 8. What was not tested / limits of this review
 

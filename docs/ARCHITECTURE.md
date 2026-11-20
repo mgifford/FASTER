@@ -48,7 +48,7 @@ The **review engine** and **review pack** are separate. The same repository snap
 - Preserve immutable URL for repository file contents at a resolved commit SHA. Issue/PR pages are not immutable, so include retrieval date and state for future improvements.
 - Keep layers provider-neutral: `analyzeRepository` should not know anything about WebMCP, a model vendor, or W3C. `evaluateReviewPack` should not fetch external URLs directly.
 - Return warnings for truncated trees, skipped files, rate limits, partial issue histories and unsupported formats. Do not interpret a missing match as a negative result.
-- Long-term: stable source inventory, candidate evidence store, deduplicated clauses, questionnaire version diffs, review changes over commits, persistent progress and undoable decisions.
+- Implemented (Phase 1): bounded source inventory with selected/skipped counts, per-file reasons, reviewer multi-select, project-type suggestion, repository metadata and issue/PR merged-state provenance. Still future: canonical/published-document detection, monorepo scoping, a candidate evidence store, deduplicated clauses, questionnaire version diffs, review changes over commits, persistent progress and undoable decisions.
 
 ## Why no automatic code execution?
 

@@ -7,8 +7,11 @@
 - Added a pull-request `Check` workflow and made the GitHub Pages deploy depend on `npm run check`.
 - Added `docs/DEPLOYMENT.md` for GitHub Pages, AGPL section 13, custom domains and the deferred Cloudflare MCP service.
 - Recorded the Phase 0 audit in `docs/BASELINE.md`.
-- Fixed Phase 0 blockers F1-F5: answer changes keep keyboard focus and scans focus the results heading; muted text uses a contrast-safe adaptive token; the file input no longer overflows at 320 CSS px; extensionless `README`/`LICENSE`/`CHANGELOG` and more text formats are discovered; analysis stops with guidance when no reviewable document exists; review packs carry an immutable version through UI, JSON, Markdown and WebMCP.
-- Expanded the test suite from 12 to 18 tests, including UI/contrast/reflow guards and pack-version consistency.
+- Fixed Phase 0 blockers F1-F5: answer changes keep keyboard focus and scans focus the results heading; muted text uses a contrast-safe adaptive token; the file input no longer overflows at 320 CSS px; extensionless `README`/`LICENSE`/`CHANGELOG` and more text formats are discovered; analysis stops with guidance when no reviewable document exists; review packs carry an explicit version through UI, JSON, Markdown and WebMCP.
+- Added a two-step discovery flow: repository metadata and API budget, a ranked document inventory with selected/skipped counts and reasons, explicit project-type suggestion/confirmation, and a 16-document selector before analysis.
+- Added issue/PR labels, timestamps and verified merged state to evidence; added retrieval timestamps and inventory coverage to the review record and Markdown export.
+- Merged multiple rules per question, round-robined evidence across documents/discussions/code, and replaced AI-prompt slicing with a structurally bounded, valid JSON bundle.
+- Expanded the test suite from 12 to 25 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
 
 ## 0.2.0 - Generic-first consolidation (2026-11-19)
 

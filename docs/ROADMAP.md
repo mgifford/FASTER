@@ -7,7 +7,7 @@
 - [x] Bounded source, issue and PR discovery; line-level candidate snippets with source links.
 - [x] Draft answers, human rationale, separate AI proposals, Markdown/JSON export, saved-review import.
 - [x] Read-only draft WebMCP integration with no-AI normal-browser fallback.
-- [x] Data validation and 18 unit tests.
+- [x] Data validation and 25 unit tests.
 
 ## Phase 0 remediation (2026-11-19)
 
@@ -15,8 +15,19 @@
 - [x] Muted text meets WCAG 1.4.3 in light and dark themes; 320 px reflow no longer overflows.
 - [x] Extensionless `README`/`LICENSE`/`CHANGELOG` and common text formats are discovered.
 - [x] Analysis stops with guidance when no reviewable document is found.
-- [x] Review packs carry an immutable version through UI, JSON, Markdown and WebMCP.
-- [ ] Remaining baseline findings F6-F16 (evidence caps, rule merging, inventory, provenance).
+- [x] Review packs carry an explicit version through UI, JSON, Markdown and WebMCP.
+- [x] Evidence rule merging, discussion-aware evidence diversity, and structurally bounded AI prompts.
+- [ ] Remaining baseline findings F8 and F13-F16 (matching quality, adapter tests, provenance, rate limits).
+
+## Phase 1 discovery (2026-11-20)
+
+- [x] Discovery returns a ranked inventory with selected/skipped counts, sizes, reasons and truncation warnings.
+- [x] Reviewer selects up to 16 documents; implementation code is sampled up to 4 files.
+- [x] Transparent project-type suggestion with an explicit "Use suggested type" action (never auto-confirmed).
+- [x] Repository metadata (description, topics, license, language, archived, default branch) and API budget.
+- [x] Issue/PR labels, timestamps and verified merged status carried into evidence.
+- [ ] Canonical/published document discovery and monorepo subdirectory scoping.
+- [ ] Preliminary Django pilot recorded with 25 AI-assisted labels (70% precision, 74% recall); independent human confirmation pending.
 
 ## Deployment baseline (2026-11-19)
 
@@ -25,11 +36,11 @@
 - [x] Documented deployment, custom-domain and source-offer requirements.
 - [ ] Optional Cloudflare remote MCP service (Phase 6, not a Pages backup).
 
-## Milestone 1: Real document discovery
+## Milestone 1: Remaining discovery hardening
 
-- [ ] Project kind detection with explicit reviewer confirmation.
-- [ ] Inventory of source, generated and published documents; reviewer selects relevant targets.
-- [ ] Better GitHub rate-limit handling and visible coverage report.
+- [ ] Canonical and published-document detection, including ReSpec/Bikeshed output.
+- [ ] Monorepo subdirectory scoping and multiple target roots.
+- [ ] Better GitHub rate-limit retry/cache handling; the current UI shows the remaining budget.
 - [ ] Integration tests against non-W3C public project snapshots.
 - [ ] Full browser keyboard/zoom/forced-colors manual review.
 

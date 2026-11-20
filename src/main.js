@@ -1,4 +1,4 @@
-import { inspectRepository } from './github.js';
+import { discoverRepository, fetchRepositorySources } from './github.js';
 import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, toMarkdown, toAIPrompt } from './review-core.js';
 import { registerWebMCP } from './webmcp.js';
 
@@ -6,6 +6,9 @@ const $ = id => document.getElementById(id);
 let review = null;
 let controller = null;
 let currentConfig = null;
+let discovery = null;
+let selectedDocuments = new Set();
+let isBusy = false;
 const node = (tag, text, className) => {
   const el = document.createElement(tag);
   if (text !== undefined && text !== null) el.textContent = String(text);
@@ -26,7 +29,13 @@ function blobDownload(filename, text, type='text/plain') {
   const url=URL.createObjectURL(blob); const a=node('a'); a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 function fileBase() { return `${review.repository.owner}-${review.repository.repo}-${review.commitSha.slice(0,8)}-horizontal-review`; }
-function setBusy(busy) { $('scan-button').disabled=busy;$('cancel-button').disabled=!busy; }
+function setBusy(busy) {
+  isBusy=busy;
+  $('scan-button').disabled=busy;
+  $('cancel-button').disabled=!busy;
+  const analyze=$('analyze-selected'); if(analyze) analyze.disabled=busy||!selectedDocuments.size;
+  const cancelSelected=$('cancel-selected'); if(cancelSelected) cancelSelected.disabled=!busy;
+}
 function statusLabel(s) { return ({'needs-investigation':'Needs investigation','met':'Met','not-met':'Not met','not-applicable':'Not applicable'})[s] || s; }
 
 let presetRegistry = [];
@@ -65,17 +74,35 @@ async function init() {
     $('preset').value='general';
     await loadPreset('general');
     $('preset').addEventListener('change',async()=>{
+      if(isBusy){$('preset').value=currentConfig.preset.id;updateMessage('Wait for the current request to finish before changing review packs.');return;}
       $('scan-button').disabled=true;
-      try {await loadPreset($('preset').value);updateMessage('Review pack changed. Run analysis to use it. Existing review remains unchanged.');}
+      try {await loadPreset($('preset').value);updateMessage(discovery?'Review pack changed. The inventory remains valid; analysis will use the new pack.':'Review pack changed. Discover a repository to use it.');}
       catch(err){updateMessage(`Could not load review pack: ${err.message}`);}
-      finally{$('scan-button').disabled=false;}
+      finally{if(!isBusy)$('scan-button').disabled=false;}
     });
     const mcp = await registerWebMCP(()=>review,()=>presetRegistry);
     $('webmcp-status').textContent=mcp.available ? `Optional WebMCP tools registered: ${mcp.tools.join(', ')}` : `WebMCP unavailable: ${mcp.reason} The site remains fully functional.`;
   } catch(err) { updateMessage(`Configuration failure: ${err.message}. Serve this directory over HTTP, not file://.`); return; }
-  $('intake-form').addEventListener('submit', startAnalysis);
+  $('intake-form').addEventListener('submit', startDiscovery);
   $('cancel-button').addEventListener('click',()=>controller?.abort());
+  $('cancel-selected').addEventListener('click',()=>controller?.abort());
+  $('analyze-selected').addEventListener('click', analyzeSelected);
+  $('use-type').addEventListener('click',()=>{
+    if(!discovery?.suggestion)return;
+    $('target-type').value=discovery.suggestion.type;
+    $('use-type').hidden=true;
+    $('inventory-status').textContent=`Applied suggested type "${discovery.suggestion.type}". Confirm or change it before analyzing.`;
+    $('target-type').focus();
+  });
+  $('include-code').addEventListener('change',()=>{if(discovery)renderInventory(discovery);});
+  $('target-type').addEventListener('change',()=>{if(discovery) $('use-type').hidden=!discovery.suggestion || discovery.suggestion.type==='other' || discovery.suggestion.type===$('target-type').value;});
   for(const id of ['area-filter','status-filter','question-filter']) $(id).addEventListener('input',renderQuestions);
+  for(const id of ['repository','ref']) $(id).addEventListener('input',()=>{
+    if(!discovery)return;
+    discovery=null;selectedDocuments.clear();review=null;
+    $('inventory').hidden=true;$('results').hidden=true;updateAnalyzeButton();
+    updateMessage('Repository or ref changed. Discover again.');
+  });
   $('download-json').addEventListener('click',()=>review&&blobDownload(`${fileBase()}.json`,JSON.stringify(review,null,2),'application/json'));
   $('download-md').addEventListener('click',()=>review&&blobDownload(`${fileBase()}.md`,toMarkdown(review)));
   $('copy-ai').addEventListener('click',async()=>{
@@ -88,28 +115,164 @@ async function init() {
   $('load-review').addEventListener('change',loadSavedReview);
 }
 
-async function startAnalysis(ev) {
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes)) return 'unknown size';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function updateAnalyzeButton() {
+  const button = $('analyze-selected');
+  if (!button) return;
+  button.disabled = isBusy || !selectedDocuments.size;
+  const help = $('document-help');
+  const total = discovery?.inventory.counts.documents || 0;
+  if (help) help.textContent = `Select up to 16 documents to search. ${selectedDocuments.size} selected.${total > 100 ? ` Showing the top 100 of ${total} candidates.` : ''}`;
+}
+
+function updateCoverage() {
+  if (!discovery) return;
+  const counts = discovery.inventory.counts;
+  const code = $('include-code').checked ? discovery.inventory.defaultCodePaths.length : 0;
+  const stats = [
+    ['Discovered files', counts.discovered],
+    ['Documents', counts.documents],
+    ['Selected', selectedDocuments.size],
+    ['Code sample', code],
+    ['Skipped', counts.skippedLarge + counts.skippedUnsupported + counts.skippedEmpty]
+  ];
+  $('coverage').replaceChildren(...stats.map(([label, value]) => {
+    const box = node('div', null, 'stat');
+    box.append(node('strong', value), node('span', label));
+    return box;
+  }));
+}
+
+function renderInventory(result, focus = false) {
+  discovery = result;
+  $('inventory').hidden = false;
+  const repo = result.repo;
+  const meta = [];
+  if (repo.description) meta.push(repo.description);
+  meta.push(`Default branch: ${repo.defaultBranch}`);
+  meta.push(`Commit: ${result.sha}`);
+  meta.push(`License: ${repo.license || 'not detected'}`);
+  if (repo.language) meta.push(`Language: ${repo.language}`);
+  if (repo.topics?.length) meta.push(`Topics: ${repo.topics.join(', ')}`);
+  if (repo.archived) meta.push('Archived repository');
+  if (result.rateLimit) meta.push(`GitHub API remaining: ${result.rateLimit.remaining}/${result.rateLimit.limit}`);
+  $('repo-meta').textContent = meta.join(' · ');
+
+  const suggestion = result.suggestion;
+  $('type-suggestion').textContent = suggestion ? `Suggested project type: ${suggestion.type} (not confirmed). ${suggestion.reasons.join('; ')}.` : '';
+  $('use-type').hidden = !suggestion || suggestion.type === 'other' || suggestion.type === $('target-type').value;
+  $('use-type').dataset.type = suggestion?.type || '';
+
+  const list = $('document-list');
+  list.replaceChildren();
+  for (const doc of result.inventory.documents) {
+    const label = node('label', null, 'checkline inventory-item');
+    const input = node('input');
+    input.type = 'checkbox'; input.value = doc.path; input.checked = selectedDocuments.has(doc.path);
+    input.addEventListener('change', () => {
+      if (input.checked && selectedDocuments.size >= 16) {
+        input.checked = false;
+        $('inventory-status').textContent = 'Select at most 16 documents.';
+        return;
+      }
+      if (input.checked) selectedDocuments.add(doc.path); else selectedDocuments.delete(doc.path);
+      updateCoverage(); updateAnalyzeButton();
+    });
+    label.append(input, node('span', `${doc.path} (${formatBytes(doc.size)}; ${doc.reason})`));
+    list.append(label);
+  }
+  if (!result.inventory.documents.length) {
+    list.append(node('p', 'No reviewable documents were found. Add a priority document path and discover again.', 'help'));
+  }
+
+  const code = result.inventory.code;
+  $('code-options').hidden = !code.length || !$('include-code').checked;
+  $('code-help').textContent = code.length ? `Up to ${Math.min(4, code.length)} code files will be included automatically: ${code.slice(0, 4).map(file => file.path).join(', ')}.` : '';
+
+  const counts = result.inventory.counts;
+  const skipped = [];
+  if (counts.skippedLarge) skipped.push(`${counts.skippedLarge} file(s) over 140 KB were not indexed.`);
+  if (counts.skippedUnsupported) skipped.push(`${counts.skippedUnsupported} unsupported file type(s) were ignored.`);
+  if (counts.skippedEmpty) skipped.push(`${counts.skippedEmpty} empty file(s) were ignored.`);
+  if (result.inventory.skippedLarge.length) skipped.push(`Examples of oversized files: ${result.inventory.skippedLarge.join(', ')}.`);
+  skipped.push(...result.warnings);
+  $('skipped-list').replaceChildren(...skipped.map(text => node('li', text)));
+  $('skipped-details').hidden = !skipped.length;
+
+  $('inventory-status').textContent = result.inventory.documents.length
+    ? 'Select up to 16 documents, then analyze. No conformance finding is made automatically.'
+    : 'No reviewable documents were found. Add a priority document path and discover again.';
+  updateCoverage(); updateAnalyzeButton();
+  if (focus) $('inventory-heading').focus();
+}
+
+async function startDiscovery(ev) {
   ev.preventDefault();
-  if(!currentConfig)return;
-  const areas=[...document.querySelectorAll('input[name="review-area"]:checked')].map(x=>x.value);
-  if(!areas.length){updateMessage('Select at least one review area.');return;}
-  controller = new AbortController();setBusy(true);
+  if (!currentConfig || isBusy) return;
+  const areas = [...document.querySelectorAll('input[name="review-area"]:checked')].map(input => input.value);
+  if (!areas.length) { updateMessage('Select at least one review area.'); return; }
+  discovery = null; selectedDocuments.clear(); review = null;
+  $('inventory').hidden = true; $('results').hidden = true; updateAnalyzeButton();
+  controller = new AbortController(); setBusy(true);
   try {
-    const targetType=$('target-type').value;
-    const reviewPurpose=$('review-purpose').value.trim();
-    const requestedDocument=$('document-path').value.trim();
-    const snapshot=await inspectRepository($('repository').value,$('ref').value,{includeCode:$('include-code').checked,preferredDocumentPath:requestedDocument,signal:controller.signal,onProgress:updateMessage});
-    if (!hasReviewableDocuments(snapshot.files)) {
-      updateMessage(`No reviewable documents were found in the sampled repository.${requestedDocument ? ` The requested path "${requestedDocument}" was not selected.` : ''} Add a priority document path or choose a repository with a README or other documentation.`);
+    const requestedDocument = $('document-path').value.trim();
+    const result = await discoverRepository($('repository').value, $('ref').value, {
+      includeCode: $('include-code').checked,
+      preferredDocumentPath: requestedDocument,
+      signal: controller.signal,
+      onProgress: updateMessage
+    });
+    selectedDocuments = new Set(result.inventory.defaultDocumentPaths);
+    review = null;
+    $('results').hidden = true;
+    renderInventory(result, true);
+    updateMessage(result.inventory.documents.length ? `Discovered ${result.inventory.counts.documents} document candidate(s) and ${result.inventory.counts.code} code file(s) at ${result.sha}. Select targets, then analyze.` : 'No reviewable documents were found. Add a priority document path and discover again.');
+  } catch (err) {
+    updateMessage(err.name === 'AbortError' ? 'Discovery cancelled.' : `Discovery failed: ${err.message}`);
+  } finally { setBusy(false); controller = null; }
+}
+
+async function analyzeSelected() {
+  if (!currentConfig || !discovery || isBusy) return;
+  if (!selectedDocuments.size) { updateMessage('Select at least one document.'); return; }
+  const areas = [...document.querySelectorAll('input[name="review-area"]:checked')].map(input => input.value);
+  if (!areas.length) { updateMessage('Select at least one review area.'); return; }
+  const paths = [...selectedDocuments];
+  if ($('include-code').checked) paths.push(...discovery.inventory.defaultCodePaths);
+  const uniquePaths = [...new Set(paths)].slice(0, 20);
+  controller = new AbortController(); setBusy(true);
+  try {
+    const sources = await fetchRepositorySources({
+      repo: discovery.repo, sha: discovery.sha, tree: discovery.tree, paths: uniquePaths,
+      signal: controller.signal, onProgress: updateMessage
+    });
+    if (!hasReviewableDocuments(sources.files)) {
+      updateMessage('The selected sources contained no reviewable documents. Select another document and try again.');
       return;
     }
-    const relevant=currentConfig.questions.questions.filter(q=>areas.includes(q.area));
-    const evidence=findEvidence({files:snapshot.files,issues:snapshot.issues,rules:currentConfig.rules.rules,questions:relevant,repoUrl:snapshot.repo.url,sha:snapshot.sha});
-    review=newReview({repo:snapshot.repo,sha:snapshot.sha,selectedAreas:areas,questions:relevant,evidence,sourceConfig:currentConfig.sources,fileSummary:snapshot.files.map(f=>f.path),issueSummary:snapshot.issues.map(i=>`${i.kind} #${i.number} (${i.state || 'unknown'})`),warnings:snapshot.warnings,preset:currentConfig.preset,context:{targetType,reviewPurpose,requestedDocument}});
+    const relevant = currentConfig.questions.questions.filter(question => areas.includes(question.area));
+    const evidence = findEvidence({files:sources.files, issues:sources.issues, rules:currentConfig.rules.rules, questions:relevant, repoUrl:discovery.repo.url, sha:discovery.sha, retrievedAt:sources.retrievedAt});
+    const inventory = {...discovery.inventory.counts, selectedDocuments:selectedDocuments.size, selectedCode:$('include-code').checked ? discovery.inventory.defaultCodePaths.length : 0, selectedPaths:uniquePaths};
+    review = newReview({
+      repo: discovery.repo, sha: discovery.sha, selectedAreas: areas, questions: relevant, evidence,
+      sourceConfig: currentConfig.sources, fileSummary: sources.files.map(file => file.path),
+      issueSummary: sources.issues.map(issue => `${issue.kind === 'pull-request-discussion' ? 'PR' : 'Issue'} #${issue.number} (${issue.kind === 'pull-request-discussion' ? (issue.merged ? 'merged' : issue.state || 'unknown') : (issue.state || 'unknown')})`),
+      warnings: [...discovery.warnings, ...sources.warnings], preset: currentConfig.preset,
+      context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim()},
+      retrievedAt: sources.retrievedAt, inventory
+    });
+    $('inventory-status').textContent='Analysis complete for the selected documents. Review the evidence below.';
     showReview();
-    updateMessage(`Analyzed ${snapshot.files.length} source files and ${snapshot.issues.length} issue/PR discussions. No conformance findings were made automatically.`);
-  } catch (err) {updateMessage(err.name==='AbortError'?'Analysis cancelled.':`Analysis failed: ${err.message}`);}
-  finally {setBusy(false);controller=null;}
+    updateMessage(`Analyzed ${sources.files.length} source files and ${sources.issues.length} issue/PR discussions. No conformance findings were made automatically.`);
+  } catch (err) {
+    updateMessage(err.name === 'AbortError' ? 'Analysis cancelled.' : `Analysis failed: ${err.message}`);
+  } finally { setBusy(false); controller = null; }
 }
 
 function showReview() {
@@ -221,7 +384,7 @@ async function loadSavedReview(ev){
     const candidate=JSON.parse(await file.text());
     if(!['0.1.0','0.2.0'].includes(candidate.schemaVersion)||!Array.isArray(candidate.questions)||!Array.isArray(candidate.selectedAreas)||!candidate.repository?.url||!candidate.commitSha||!candidate.scope?.warnings||!candidate.questionnaireSources)throw Error('Unsupported review data format.');
     if(candidate.questions.length>1000)throw Error('Unreasonable number of questions.');
-    review=candidate;showReview();updateMessage('Saved review opened locally; no network request made.');
+    discovery=null;$('inventory').hidden=true;review=candidate;showReview();updateMessage('Saved review opened locally; no network request made.');
   }catch(err){updateMessage(`Could not open review: ${err.message}`);}finally{ev.target.value='';}
 }
 init();

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
+import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,buildInventory,suggestProjectType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
 const question={id:'A11Y-001',area:'accessibility',prompt:'Accessible name?',why:'Meaningful names.'};
 const cfg={reviewAreas:[{id:'accessibility',title:'Accessibility'}]};
 function fixtureReview(){
@@ -82,4 +82,88 @@ test('Review preserves and exports the question-pack version',()=>{
   assert.equal(review.preset.version,'0.2.0');
   assert.match(toMarkdown(review),/version 0\.2\.0/);
   assert.match(toAIPrompt(review),/"version": "0\.2\.0"/);
+});
+
+test('Inventory reports discovered, selected and skipped files with reasons',()=>{
+  const tree=[
+    {path:'README.md',size:100,type:'blob',sha:'a'},
+    {path:'docs/guide.md',size:200,type:'blob',sha:'b'},
+    {path:'huge.md',size:200000,type:'blob',sha:'c'},
+    {path:'image.png',size:10,type:'blob',sha:'d'},
+    {path:'empty.md',size:0,type:'blob',sha:'e'},
+    {path:'src/index.js',size:50,type:'blob',sha:'f'}
+  ];
+  const inventory=buildInventory(tree,{includeCode:true,preferredDocumentPath:'docs/guide.md',maxDocs:1,maxCode:1});
+  assert.deepEqual(inventory.documents.map(file=>file.path),['docs/guide.md','README.md']);
+  assert.equal(inventory.documents[0].reason,'requested by reviewer');
+  assert.deepEqual(inventory.defaultDocumentPaths,['docs/guide.md']);
+  assert.deepEqual(inventory.defaultCodePaths,['src/index.js']);
+  assert.equal(inventory.counts.documents,2);
+  assert.equal(inventory.counts.skippedLarge,1);
+  assert.equal(inventory.counts.skippedUnsupported,1);
+  assert.equal(inventory.counts.skippedEmpty,1);
+  assert.deepEqual(buildInventory(tree).defaultCodePaths,['src/index.js']);
+});
+
+test('Project type suggestions are evidence-based and remain unconfirmed',()=>{
+  assert.equal(suggestProjectType({repo:{topics:[]},tree:[{path:'index.bs'}]}).type,'specification');
+  assert.equal(suggestProjectType({repo:{topics:['api']},tree:[]}).type,'service');
+  assert.equal(suggestProjectType({repo:{topics:[]},tree:[{path:'public/index.html'}]}).type,'application');
+  assert.equal(suggestProjectType({repo:{topics:[]},tree:[{path:'package.json'}]}).type,'library');
+  assert.equal(suggestProjectType({repo:{topics:['dataset']},tree:[{path:'data/rows.csv'}]}).type,'dataset');
+  assert.equal(suggestProjectType({repo:{topics:['django','framework']},tree:[{path:'tests/fixtures/rows.csv'},{path:'pyproject.toml'},{path:'django/core/servers/basehttp.py'}]}).type,'library');
+  assert.equal(suggestProjectType({repo:{topics:[]},tree:[{path:'LICENSE'}]}).type,'other');
+  assert.ok(suggestProjectType({repo:{topics:[]},tree:[{path:'index.bs'}]}).reasons.length);
+});
+
+test('Multiple rules for one question are merged',()=>{
+  const question={id:'Q-MULTI',area:'architecture',prompt:'Merged?',why:'Test.'};
+  const evidence=findEvidence({
+    files:[{path:'doc.md',content:'alpha and beta appear here',kind:'repository-document'}],
+    rules:[{id:'r1',questionId:question.id,phrases:['alpha']},{id:'r2',questionId:question.id,phrases:['beta']}],
+    questions:[question],repoUrl:'https://github.com/o/r',sha:'abc'
+  });
+  assert.equal(evidence[question.id].length,1);
+  assert.deepEqual([...evidence[question.id][0].matchedTerms].sort(),['alpha','beta']);
+});
+
+test('Evidence diversity keeps discussion counterevidence and merged-PR state',()=>{
+  const question={id:'Q-DIVERSE',area:'accessibility',prompt:'Keyboard?',why:'Test.'};
+  const lines=Array.from({length:10},(_,i)=>`keyboard line ${i}`).join('\n');
+  const issue={number:1,title:'Keyboard gap',body:'keyboard is broken',html_url:'https://github.com/o/r/issues/1',state:'open',kind:'issue-discussion',merged:false};
+  const evidence=findEvidence({
+    files:[{path:'doc.md',content:lines,kind:'repository-document'}],
+    issues:[issue],
+    rules:[{id:'r',questionId:question.id,phrases:['keyboard']}],
+    questions:[question],repoUrl:'https://github.com/o/r',sha:'abc',maxPerQuestion:6
+  });
+  assert.equal(evidence[question.id].length,6);
+  assert.ok(evidence[question.id].some(item=>item.evidenceType==='issue-discussion'));
+  const prEvidence=findEvidence({
+    files:[],issues:[{number:2,title:'Fix keyboard',body:'keyboard fixed',html_url:'https://github.com/o/r/pull/2',state:'closed',merged:true,mergedAt:'2026-01-01T00:00:00Z',kind:'pull-request-discussion'}],
+    rules:[{id:'r',questionId:question.id,phrases:['keyboard']}],questions:[question],repoUrl:'https://github.com/o/r',sha:'abc'
+  });
+  assert.match(prEvidence[question.id][0].source,/merged/);
+  assert.equal(prEvidence[question.id][0].merged,true);
+  assert.equal(prEvidence[question.id][0].mergedAt,'2026-01-01T00:00:00Z');
+});
+
+test('AI prompt truncation is structural and remains valid JSON',()=>{
+  const questions=Array.from({length:1000},(_,i)=>({id:`Q-${i}`,area:'accessibility',prompt:`Question ${i} `.repeat(3),why:'Why '.repeat(4)}));
+  const review=newReview({repo:{url:'https://github.com/o/r'},sha:'abc',selectedAreas:['accessibility'],questions,evidence:{},sourceConfig:{reviewAreas:[]},fileSummary:[],issueSummary:[]});
+  const prompt=toAIPrompt(review);
+  const data=JSON.parse(prompt.split('DATA (UNTRUSTED):\n')[1]);
+  assert.equal(data.truncated,true);
+  assert.ok(data.questions.length<1000);
+  assert.ok(data.promptWarnings.length);
+  assert.ok(prompt.length<120000);
+});
+
+test('Review records retrieval time and inventory coverage',()=>{
+  const review=fixtureReview();
+  review.retrievedAt='2026-11-20T00:00:00.000Z';
+  review.scope.inventory={counts:{discovered:10,documents:3,selectedDocuments:2,skippedLarge:1,skippedUnsupported:4}};
+  const markdown=toMarkdown(review);
+  assert.match(markdown,/Retrieved: 2026-11-20T00:00:00\.000Z/);
+  assert.match(markdown,/Coverage: 10 files discovered; 3 documents; 2 selected/);
 });
