@@ -37,13 +37,31 @@
       </div>
       <fieldset><legend>Review areas</legend><p class="help">Select relevant cross-cutting subjects. These are preliminary probes, not an official assessment or conformance test.</p><div id="areas" class="areas"></div></fieldset>
       <label class="checkline"><input id="include-code" type="checkbox"> Also inspect a small sample of implementation code (optional)</label>
-      <div class="actions"><button id="scan-button" type="submit">Analyze repository</button><button id="cancel-button" class="secondary" type="button" disabled>Cancel</button></div>
+      <div class="actions"><button id="scan-button" type="submit">Discover repository</button><button id="cancel-button" class="secondary" type="button" disabled>Cancel</button></div>
     </form>
     <p id="progress" class="status" role="status" aria-live="polite">No repository inspected yet.</p>
   </section>
+  <section id="inventory" hidden aria-labelledby="inventory-heading">
+    <div class="panel">
+      <h2 id="inventory-heading" tabindex="-1">2. Review repository inventory</h2>
+      <p id="repo-meta" class="help"></p>
+      <p id="type-suggestion"></p>
+      <div class="actions"><button id="use-type" type="button" class="secondary" hidden>Use suggested type</button></div>
+      <div id="coverage" class="stats" aria-live="polite"></div>
+      <fieldset>
+        <legend>Documents</legend>
+        <p class="help" id="document-help">Select up to 16 documents to search.</p>
+        <div id="document-list" class="inventory-list"></div>
+      </fieldset>
+      <details id="code-options" hidden><summary>Implementation code sample</summary><p class="help" id="code-help"></p></details>
+      <details id="skipped-details" hidden><summary>Skipped files and coverage limits</summary><ul id="skipped-list"></ul></details>
+      <div class="actions"><button id="analyze-selected" type="button" disabled>Analyze selected documents</button><button id="cancel-selected" class="secondary" type="button" disabled>Cancel</button></div>
+      <p id="inventory-status" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
   <section id="results" hidden aria-labelledby="results-heading">
     <div class="panel">
-      <h2 id="results-heading" tabindex="-1">2. Examine evidence and answer outstanding questions</h2>
+      <h2 id="results-heading" tabindex="-1">3. Examine evidence and answer outstanding questions</h2>
       <p id="repo-summary"></p><p id="snapshot-label" class="help"></p>
       <div id="counts" class="stats" aria-live="polite"></div>
       <div class="form-grid">
@@ -54,14 +72,14 @@
       <div id="questions" class="questions"></div>
     </div>
     <section class="panel" aria-labelledby="ai-heading">
-      <h2 id="ai-heading">3. Optional AI assistance (bring your own)</h2>
+      <h2 id="ai-heading">4. Optional AI assistance (bring your own)</h2>
       <p>Use your preferred AI tool. Export an evidence-limited prompt, then paste its JSON proposals below. Suggestions do not change review decisions until you approve them.</p>
       <div class="actions"><button id="copy-ai" type="button" class="secondary">Copy AI evidence prompt</button><button id="download-ai" type="button" class="secondary">Download AI evidence prompt</button></div>
       <details><summary>Paste AI suggestions (JSON)</summary><label for="ai-json">JSON array of suggested answers</label><textarea id="ai-json" rows="7" placeholder='[{"questionId":"A11Y-001","suggestedAnswer":"needs-investigation","explanation":"...","evidenceIds":["A11Y-001-E1"]}]'></textarea><button id="import-ai" type="button">Import unapproved suggestions</button><p class="help">Evidence IDs must exist in the current analysis. External or fabricated citations are rejected.</p></details>
       <p id="ai-message" role="status" aria-live="polite"></p>
     </section>
     <section class="panel" aria-labelledby="export-heading">
-      <h2 id="export-heading">4. Export results</h2>
+      <h2 id="export-heading">5. Export results</h2>
       <div class="actions"><button id="download-json" type="button">Download review JSON</button><button id="download-md" type="button" class="secondary">Download GitHub Markdown</button></div>
       <p class="help">All conclusions remain drafts. Publishing an issue, claiming conformance, or submitting a formal review requires separate human approval outside this starter.</p>
       <details><summary>Coverage and limitations</summary><ul id="limitations"></ul></details>

@@ -41,12 +41,18 @@ The exported review JSON includes:
 {
   "schemaVersion": "0.2.0",
   "generatedAt": "2026-11-19T00:00:00.000Z",
+  "retrievedAt": "2026-11-19T00:00:00.000Z",
   "repository": {"url": "https://github.com/owner/repository"},
   "commitSha": "<resolved-commit>",
   "preset": {"id": "general", "title": "General cross-cutting review", "kind": "community-starter", "status": "experimental", "version": "0.2.0"},
   "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": ""},
   "selectedAreas": ["accessibility", "security"],
-  "scope": {"filesInspected": [], "discussionsInspected": [], "warnings": []},
+  "scope": {
+    "filesInspected": [],
+    "discussionsInspected": [],
+    "warnings": [],
+    "inventory": {"discovered": 35, "documents": 5, "code": 23, "selectedDocuments": 5, "selectedCode": 4, "skippedLarge": 0, "skippedUnsupported": 7, "skippedEmpty": 0}
+  },
   "questions": [{
     "id": "ACC-001",
     "answer": "needs-investigation",
@@ -58,7 +64,7 @@ The exported review JSON includes:
 }
 ```
 
-The example is schematic and does not claim that `owner/repository` exists or has been scanned.
+The inventory is the discovery result, not proof that every file was inspected. `filesInspected` lists only successfully fetched sources; `retrievedAt` records when the discussion/source snapshot was taken. The example is schematic and does not claim that `owner/repository` exists or has been scanned.
 
 ## Evidence requirements
 

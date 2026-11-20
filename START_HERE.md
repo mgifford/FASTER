@@ -4,7 +4,7 @@ This project is a working **generic GitHub repository review assistant**, not a 
 
 ## For a reviewer
 
-Run `python3 -m http.server 8000` and visit `http://localhost:8000`. Enter a public repository, leave the ref blank unless a version matters, choose a review pack and areas, and analyze. The app builds an editable draft; do not treat it as an accessibility, security, sustainability or standards conformance finding. Save JSON to resume; export Markdown for discussion. Copy/download the AI prompt only if you choose to share evidence with your AI provider.
+Run `python3 -m http.server 8000` and visit `http://localhost:8000`. Enter a public repository, leave the ref blank unless a version matters, choose a review pack and areas, then **Discover repository**. Review the document inventory and suggested type, select up to 16 documents, and **Analyze selected documents**. The app builds an editable draft; do not treat it as an accessibility, security, sustainability or standards conformance finding. Save JSON to resume; export Markdown for discussion. Copy/download the AI prompt only if you choose to share evidence with your AI provider.
 
 ## For an AI coding agent
 
@@ -38,3 +38,4 @@ Run `python3 -m http.server 8000` and visit `http://localhost:8000`. Enter a pub
 | What's the complete implementation plan? | **`docs/IMPLEMENTATION_PROMPT.md`** |
 | How is it deployed, and what does AGPL require? | `docs/DEPLOYMENT.md` |
 | What is known broken or untested? | `docs/BASELINE.md` |
+| What does the first generic pilot show? | `docs/PILOT.md` |

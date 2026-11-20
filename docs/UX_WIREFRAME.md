@@ -19,12 +19,12 @@ Priority document    [ Optional: docs/specification.md              ]
 [+] Accessibility  [+] Internationalization  [+] Privacy
 [+] Security       [+] Architecture          [+] Sustainability (experimental)
 
-[ Analyze repository ]       [ Cancel ]
+[ Discover repository ]      [ Cancel ]
 ```
 
-This is the implemented starter, except automatic project-type inference and semantic document discovery are **future** functionality. The pack and scope can be refined after repository preflight in a later milestone.
+This is the implemented starter. A transparent project-type suggestion, ranked document inventory and reviewer multi-select are implemented; canonical/published-document detection and monorepo scoping remain future work.
 
-## Screen 2: Repository summary (next milestone)
+## Screen 2: Repository inventory (implemented in Phase 1)
 
 ```text
 Repository: owner/repository                   Commit: 93c8...
@@ -35,7 +35,7 @@ Document candidates:
   ( ) docs/spec.html    potential normative specification
 [Select which documents are in scope]
 
-Coverage: 12/38 candidate documents inspected; 20 issues; 10 PRs
+Coverage: 12/38 candidate documents selected; 5 skipped as too large; 20 issues; 10 PRs
 Warnings: 6 large files skipped; PR history incomplete
 [Continue to questions]
 ```
