@@ -35,4 +35,5 @@ test('The reviewer identity field is present',()=>{
 
 test('The monorepo scope field is present',()=>{
   assert.match(html,/id="scope-path"/);
+  assert.match(html,/id="repo-homepage"/);
 });

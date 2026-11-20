@@ -10,7 +10,7 @@ function json(body, headers = {}) {
 
 function repoRouter(overrides = []) {
   return [
-    ['https://api.github.com/repos/o/r', () => json({private:false, default_branch:'main', description:'A library', topics:['library'], license:{spdx_id:'MIT', name:'MIT License'}, language:'JavaScript', archived:false, stargazers_count:3, forks_count:1, updated_at:'2026-11-20T00:00:00Z', html_url:'https://github.com/o/r'})],
+    ['https://api.github.com/repos/o/r', () => json({private:false, default_branch:'main', description:'A library', topics:['library'], license:{spdx_id:'MIT', name:'MIT License'}, language:'JavaScript', archived:false, stargazers_count:3, forks_count:1, updated_at:'2026-11-20T00:00:00Z', homepage:'https://example.org/docs', html_url:'https://github.com/o/r'})],
     ['https://api.github.com/repos/o/r/commits/main', () => json({sha:'abcdef1234567890', commit:{tree:{sha:'tree123'}}})],
     ['https://api.github.com/repos/o/r/git/trees/tree123?recursive=1', () => json({truncated:false, tree:[
       {path:'README.md', type:'blob', size:40, sha:'blob-readme'},
@@ -55,6 +55,7 @@ test('Discovery and source retrieval are bounded and preserve provenance', async
     assert.equal(discovery.sha, 'abcdef1234567890');
     assert.equal(discovery.repo.license, 'MIT');
     assert.equal(discovery.repo.defaultBranch, 'main');
+    assert.equal(discovery.repo.homepage, 'https://example.org/docs');
     assert.deepEqual(discovery.inventory.counts, {discovered:7, documents:2, code:2, skippedLarge:1, skippedUnsupported:1, skippedEmpty:1});
     assert.equal(discovery.suggestion.type, 'library');
     assert.ok(discovery.inventory.documents.every(file => file.size <= 140000));

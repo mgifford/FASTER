@@ -71,7 +71,7 @@ The inventory is the discovery result, not proof that every file was inspected. 
 
 ## Evidence requirements
 
-Record `id`, `questionId`, `source`, `url`, `line` if available, `evidenceType`, `sourceAuthority`, `strength`, `snippet`, matched phrases, labels and discussion timestamps where available. Future evidence records should include retrieval time, content hash, normative/informative classification, source version, temporal validity, contradiction markers and note whether an issue/PR was merged.
+Record `id`, `questionId`, `source`, `url`, `line` if available, `evidenceType`, `sourceAuthority`, `strength`, `snippet`, matched phrases, section context, possible-normative/negation/contradiction hints, duplicate sources, labels and discussion timestamps where available. Future evidence records should include retrieval time, content hash, normative/informative classification, source version, temporal validity, contradiction markers and note whether an issue/PR was merged.
 
 **Source hierarchy matters:** normative specification > approved decision/release metadata > actual implementation/tests > explanatory documentation > open issues/unmerged PRs > LLM interpretation. The exact order varies by the type of claim. For example, code can verify code behavior but cannot alone demonstrate specification normative guarantees.
 
