@@ -32,7 +32,7 @@ Run `python3 -m http.server 8000` and visit `http://localhost:8000`. Enter a pub
 | How should the code be structured? | `docs/ARCHITECTURE.md` |
 | How should review packs and evidence records work? | `docs/DATA_MODEL.md` |
 | Which frameworks can it support, and with what authority? | `docs/GOVERNANCE.md` |
-| How does my own AI interact with it? | `docs/AI_AND_MCP.md` |
+| How does my own AI or a browser agent interact with it? | `docs/AI_AND_MCP.md` |
 | What are the security and privacy requirements? | `docs/SECURITY_AND_PRIVACY.md` |
 | How do we know it works? | `docs/VALIDATION_PLAN.md` and `docs/QA_REPORT.md` |
 | What's the complete implementation plan? | **`docs/IMPLEMENTATION_PROMPT.md`** |

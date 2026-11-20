@@ -70,9 +70,11 @@
 
 ## Milestone 4: BYO AI and WebMCP
 
-- [ ] Expanded read-only browser tools and optional model adapters.
+- [x] Expanded to eight read-only browser tools with input/output schemas, activity events and a discoverable in-page tool catalogue.
+- [ ] Optional model adapters.
 - [ ] Provider-neutral input/output, cited provenance, human confirmation and prompt-injection testing.
 - [ ] Explain data/energy cost of optional local browser model downloads; avoid hidden paid API calls.
+- [ ] End-to-end test with an external browser agent/assistant; current verification uses Chrome's WebMCP feature flag.
 
 ## Milestone 5: Review continuity
 

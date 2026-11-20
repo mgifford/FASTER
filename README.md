@@ -73,6 +73,33 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - A conventional **remote** MCP server. GitHub Pages cannot host one; a Cloudflare Worker is the planned optional Phase 6 backend. Browser WebMCP is not a remote MCP endpoint and is not itself an AI model.
 - Complete browser-based accessibility QA. Unit tests and headless axe checks pass for the Phase 0 blockers; live testing with diverse assistive technologies is still required. Remaining limitations are recorded in [`docs/BASELINE.md`](docs/BASELINE.md).
 
+## Browser agent tools (WebMCP, optional)
+
+The site exposes **eight read-only tools** to a supporting browser agent through the
+[WebMCP draft](https://webmachinelearning.github.io/webmcp/). WebMCP is not a model and not a
+remote MCP server; every task remains available in the ordinary accessible UI.
+
+| Tool | Purpose |
+| --- | --- |
+| `list_review_packs` | Installed packs, versions and draft authority status. |
+| `get_review_overview` | Repository/commit, pack, coverage and question counts. |
+| `get_question_evidence` | Bounded evidence with section, negation, normative and conflict hints. |
+| `list_unresolved_questions` | Unresolved questions with evidence counts and hints. |
+| `get_repository_inventory` | Pinned metadata, selected/skipped counts, inspected files and published links. |
+| `get_questionnaire_provenance` | Pack version/status, areas and authoritative source links. |
+| `get_counterevidence` | Evidence flagged as possible negation or conflicting candidates. |
+| `prepare_export_preview` | Bounded draft summary; creates or publishes nothing. |
+
+Tools use explicit read-only annotations, JSON input/output schemas, bounded results and an
+in-page activity message when an agent activates one. The **Browser agent tools (WebMCP)**
+panel near the top of the page reports availability, lists the catalogue and provides a
+copyable example prompt.
+
+Chrome 149 and Edge 150 expose WebMCP through origin trials; for local Chrome testing enable
+`about:flags#enable-webmcp-testing` or launch with `--enable-features=WebMCP`. Firefox and
+Safari do not currently expose it. No WebMCP tool approves a finding, changes a review answer,
+downloads an export or writes to GitHub.
+
 ## Deployment
 
 The canonical site is **GitHub Pages**, built and deployed by [`pages.yml`](.github/workflows/pages.yml). Pull requests run the same `npm run check` gate through [`check.yml`](.github/workflows/check.yml). See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for repository settings, verification steps, custom domains and the planned Cloudflare MCP service.
