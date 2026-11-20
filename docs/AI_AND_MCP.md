@@ -15,24 +15,59 @@ No information is automatically uploaded to any AI vendor. A browser with no AI,
 
 The [WebMCP draft](https://webmachinelearning.github.io/webmcp/) is a W3C Community Group Report (19 November 2026), not a W3C Recommendation. It defines browser JavaScript tool exposure through `document.modelContext`. It is neither a conventional MCP endpoint nor a built-in LLM.
 
-The starter exposes **read-only** tools when the browser supports `document.modelContext.registerTool`:
+The starter exposes **eight read-only tools** when the browser supports
+`document.modelContext.registerTool`:
 
-- `list_review_packs`
-- `get_review_overview`
-- `list_unresolved_questions`
-- `get_question_evidence`
+| Tool | Output |
+| --- | --- |
+| `list_review_packs` | Pack ID, title, description, version, status, kind and default areas. |
+| `get_review_overview` | Repository, pinned commit, pack, retrieval time, coverage/inventory, evidence and question counts. |
+| `get_question_evidence` | One question and up to six bounded excerpts with section, labels, negation, possible-normative and conflict hints. |
+| `list_unresolved_questions` | Up to 40 unresolved questions with evidence counts and hints. |
+| `get_repository_inventory` | Metadata, selected/skipped counts, inspected files and candidate published links; no file contents. |
+| `get_questionnaire_provenance` | Pack version/status, areas and authoritative source links. |
+| `get_counterevidence` | Up to 20 evidence candidates flagged as possible negation or conflicting; candidates only, not conclusions. |
+| `prepare_export_preview` | Bounded draft summary and unresolved IDs; no export, download or publication. |
 
-No WebMCP? The ordinary accessible UI remains usable. The implementation deliberately avoids model-triggered writes or opaque finalization. Update API signatures against the current draft before claiming browser compatibility. Browser support may require experimental flags or be unavailable.
+Each tool declares an `outputSchema`, read-only annotations and bounded inputs/results. Source
+content tools set `untrustedContentHint`; no tool sets a consequential/write annotation. The page
+listens for `toolactivated` and `toolchange` and shows a polite activity message.
+
+Browser support (20 November 2026): Chrome 149 and Edge 150 expose WebMCP through origin
+trials; local Chrome testing uses `about:flags#enable-webmcp-testing` or
+`--enable-features=WebMCP`. Brave 1.102.2, ChatGPT Desktop and Meta Ray-Ban Display are listed
+in the project's implementation-status document; Firefox and Safari do not currently expose
+the API. The ordinary UI remains the only required path. See the
+[WebMCP implementation status](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md).
+
+No WebMCP? The ordinary accessible UI remains usable. The implementation deliberately avoids
+model-triggered writes or opaque finalization. Update API signatures against the current draft
+before claiming browser compatibility. Browser support may require experimental flags or be
+unavailable.
+
+## Discoverability
+
+The **Browser agent tools (WebMCP)** panel is visible near the top of the page. It shows:
+
+- whether WebMCP is available in this browser;
+- all eight tools, even when unavailable;
+- browser-enablement instructions;
+- a copyable example agent prompt;
+- a live activity line when an agent activates a tool.
+
+The footer also links to the panel and summarises availability. This is ordinary HTML/CSS/JS;
+no browser agent is required to review evidence.
 
 ## Suggested future WebMCP tools
 
-- `get_repository_inventory`: source paths and discovered publication metadata, no repository contents by default.
-- `get_relevant_evidence(questionId, maxResults)`: bounded snippets with provenance and truncation notices.
-- `suggest_next_question`: deterministic priority list, with explanation and no auto-answer.
-- `prepare_review_export`: preview data, no publication side effect.
-- `propose_follow_up`: return suggested human question text, not alter review state.
+- `get_changes_since_review`: compare two saved reviews by repository, commit and pack version
+  (requires the continuity work).
+- `get_related_discussions`: bounded issue/PR links for one question, with retrieval timestamps.
+- `prepare_review_export`: a preview of the exact export payload, still with no download side
+  effect.
 
-Use read-only annotations; keep outputs small; mark repository content as untrusted. Require direct user gestures for any mutation, disclosure or export with privacy implications.
+Use read-only annotations; keep outputs small; mark repository content as untrusted. Require
+direct user gestures for any mutation, disclosure or export with privacy implications.
 
 ## AI adapter interface for a later phase
 

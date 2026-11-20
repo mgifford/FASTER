@@ -6,7 +6,7 @@ Date: 2026-11-20
 
 - `npm run validate`: both review packs valid; general pack 6 areas, 20 questions, 20 rules; W3C draft pack 6 areas, 22 questions, 22 rules.
 - `npm test`: **43 tests passed** covering URL/ref validation, deterministic candidate extraction, immutable file citations, decision/proposal separation, document path safety, data exports, pack authority labeling, pack-version consistency, extensionless-document discovery, inventory/type-suggestion logic, word-boundary matching, rule merging, evidence diversity, AI-prompt bounds, saved-review validation, decision provenance, mocked GitHub discovery/retrieval/retry, scoped inventory, evidence history metadata, section/normative/contradiction hints, snippet deduplication, published-link extraction, offline evidence evaluation and optional WebMCP tool contracts.
-- HTML structural static check: 58 unique element IDs, no unmatched `label for` attributes, linked module exists.
+- HTML structural static check: 66 unique element IDs, no unmatched `label for` attributes, linked module exists.
 - Local HTTP smoke check: `index.html`, JS modules, pack registry and both question-pack JSON files returned status 200 with non-empty bodies.
 - JavaScript syntax checks: entry modules and core API code parsed successfully with Node.
 
@@ -25,6 +25,8 @@ Date: 2026-11-20
 - Provenance: a reviewer name and decision origin render in the question card; a saved review with a non-GitHub evidence URL or unknown AI evidence is rejected; a mocked 429 retry succeeds and a 403 primary rate limit reports reset guidance.
 - Evaluation: `npm run evaluate` reproduces 70.0% precision and 73.7% recall against the 25 AI-assisted Django labels; invalid AI bindings/evidence are reported without changing human decisions.
 - Monorepo scope: a mocked `docs` scope discovered only 2 documents and 0 code files; the inventory and results reported the scope and fit 320 CSS px.
+- WebMCP (Chrome 157 with `--enable-features=WebMCP`): eight read-only tools registered; `getTools()` returned all eight with read-only/untrusted annotations; `executeTool(list_review_packs)` returned both packs; `toolactivated` updated the live activity line; no console errors.
+- WebMCP fallback (Chrome without the flag): status reported unavailable, all eight tool descriptions remained visible, and the panel fit 320 CSS px.
 - History metadata: issue/PR evidence displayed `labels: privacy`/`security` and created dates from the mocked API.
 - Pack version check: the review summary and Markdown export record `v0.2.0`.
 
@@ -32,7 +34,7 @@ Date: 2026-11-20
 
 - Live public GitHub REST API retrieval under quota exhaustion, private repositories or changed/renamed repositories; the normal live scans did succeed.
 - Assistive technology tests (VoiceOver, NVDA, JAWS, etc.), manual WCAG assessment or production security review.
-- In-browser WebMCP availability; only feature-detection fallback and mock registration/execution tests were completed.
+- WebMCP in a default browser configuration, Firefox, Safari or a real external agent. Chrome with `--enable-features=WebMCP` was verified; default Chrome 157 without the flag exposes no `document.modelContext`.
 - Actual LLM inference or remote conventional MCP, neither of which is implemented.
 
 ## Known limitations

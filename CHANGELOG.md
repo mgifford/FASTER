@@ -19,6 +19,7 @@
 - Added an optional monorepo subdirectory scope and displayed issue/PR labels and dates with evidence.
 - Added Markdown/HTML section context, possible-normative hints, contradiction hints, snippet deduplication and the repository homepage link.
 - Added candidate canonical/documentation link extraction from selected sources; links are unverified and never fetched automatically.
+- Expanded browser WebMCP from four to eight read-only tools with input/output schemas, bounded results, activity events and a discoverable tool catalogue/example prompt. Verified with Chrome's `--enable-features=WebMCP`; the no-flag fallback remains fully functional.
 - Added an offline, model-neutral evidence/AI-proposal evaluation CLI with a recorded Django review/label fixture; no Cloudflare or model API is required.
 - Expanded the test suite from 12 to 43 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
 

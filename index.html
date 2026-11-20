@@ -43,6 +43,21 @@
     </form>
     <p id="progress" class="status" role="status" aria-live="polite">No repository inspected yet.</p>
   </section>
+  <section class="panel" aria-labelledby="webmcp-heading">
+    <h2 id="webmcp-heading">Browser agent tools (WebMCP, optional)</h2>
+    <p id="webmcp-status-detail" class="status"></p>
+    <p class="help">WebMCP is an experimental browser API for exposing read-only tools to a browser agent. It is not a model and not a remote MCP server. No FASTER tool approves a finding, changes a decision or writes to GitHub.</p>
+    <details>
+      <summary>Tool catalogue, browser support and example prompt</summary>
+      <ul id="webmcp-tools" class="inventory-list"></ul>
+      <p class="help">Chrome 149 origin trial and Edge 150 expose WebMCP. For local Chrome testing enable <code>about:flags#enable-webmcp-testing</code> or launch with <code>--enable-features=WebMCP</code>. Firefox and Safari do not currently expose it. The ordinary accessible UI works without WebMCP.</p>
+      <p><strong>Example agent prompt</strong></p>
+      <p id="webmcp-example">Using FASTER's read-only WebMCP tools, list the review packs, summarize unresolved questions and show evidence for one question. Do not approve anything or change the review.</p>
+      <div class="actions"><button id="copy-webmcp-prompt" class="secondary" type="button">Copy example prompt</button></div>
+      <p class="help"><a href="https://webmachinelearning.github.io/webmcp/">WebMCP Community Group draft</a> | <a href="docs/AI_AND_MCP.md">FASTER AI and MCP notes</a></p>
+    </details>
+    <p id="webmcp-activity" class="status" role="status" aria-live="polite"></p>
+  </section>
   <section id="inventory" hidden aria-labelledby="inventory-heading">
     <div class="panel">
       <h2 id="inventory-heading" tabindex="-1">2. Review repository inventory</h2>
@@ -91,6 +106,6 @@
   </section>
   <section class="panel" aria-labelledby="resume-heading"><h2 id="resume-heading">Open a saved review</h2><label for="load-review">Previously exported review JSON</label><input id="load-review" type="file" accept=".json,application/json"><p class="help">Review data stays in this browser session. Nothing is uploaded to a server.</p></section>
 </main>
-<footer class="wrap site-footer"><p>Experimental review aid. Not an official standards-body service and not a conformance checker. Optional <a href="https://www.w3.org/guide/documentreview/">W3C review guidance</a> | <a href="https://webmachinelearning.github.io/webmcp/">Draft WebMCP API</a> | <a href="https://github.com/mgifford/FASTER">Source (AGPL-3.0)</a>.</p><p id="webmcp-status" class="help" aria-live="polite"></p></footer>
+<footer class="wrap site-footer"><p>Experimental review aid. Not an official standards-body service and not a conformance checker. Optional <a href="https://www.w3.org/guide/documentreview/">W3C review guidance</a> | <a href="https://webmachinelearning.github.io/webmcp/">Draft WebMCP API</a> | <a href="#webmcp-heading">Browser agent tools</a> | <a href="https://github.com/mgifford/FASTER">Source (AGPL-3.0)</a>.</p><p id="webmcp-status" class="help" aria-live="polite"></p></footer>
 </body>
 </html>

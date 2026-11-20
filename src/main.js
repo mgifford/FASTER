@@ -80,8 +80,19 @@ async function init() {
       catch(err){updateMessage(`Could not load review pack: ${err.message}`);}
       finally{if(!isBusy)$('scan-button').disabled=false;}
     });
-    const mcp = await registerWebMCP(()=>review,()=>presetRegistry);
-    $('webmcp-status').textContent=mcp.available ? `Optional WebMCP tools registered: ${mcp.tools.join(', ')}` : `WebMCP unavailable: ${mcp.reason} The site remains fully functional.`;
+    const mcp = await registerWebMCP(()=>review,()=>presetRegistry,{onActivity:message=>{$('webmcp-activity').textContent=message;}});
+    const toolInfo = mcp.toolInfo || [];
+    $('webmcp-status-detail').textContent = mcp.available
+      ? `Available — ${mcp.tools.length} read-only tools are registered. Ask your browser agent to use FASTER; it cannot approve findings or write to GitHub.`
+      : `Unavailable — ${mcp.reason} The ordinary accessible UI remains fully functional.`;
+    $('webmcp-status').textContent = mcp.available
+      ? `Browser WebMCP available: ${mcp.tools.length} read-only tools.`
+      : `WebMCP unavailable in this browser. Ordinary UI remains functional.`;
+    $('webmcp-tools').replaceChildren(...toolInfo.map(tool=>{
+      const item = node('li');
+      item.append(node('strong', tool.name), node('span', ` — ${tool.description}`, 'help'));
+      return item;
+    }));
   } catch(err) { updateMessage(`Configuration failure: ${err.message}. Serve this directory over HTTP, not file://.`); return; }
   $('intake-form').addEventListener('submit', startDiscovery);
   $('cancel-button').addEventListener('click',()=>controller?.abort());
@@ -113,6 +124,10 @@ async function init() {
   $('download-ai').addEventListener('click',()=>review&&blobDownload(`${fileBase()}-ai-prompt.txt`,toAIPrompt(review)));
   $('import-ai').addEventListener('click',importAISuggestions);
   $('load-review').addEventListener('change',loadSavedReview);
+  $('copy-webmcp-prompt').addEventListener('click',async()=>{
+    try {await navigator.clipboard.writeText($('webmcp-example').textContent);$('webmcp-activity').textContent='Example agent prompt copied.';}
+    catch {$('webmcp-activity').textContent='Clipboard unavailable. Select and copy the example prompt manually.';}
+  });
 }
 
 function formatBytes(bytes) {
