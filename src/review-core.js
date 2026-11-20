@@ -140,6 +140,37 @@ export function suggestProjectType({ repo = {}, tree = [] } = {}) {
   return { type: 'other', reasons: ['no strong project-type signal'] };
 }
 
+export function extractPublishedLinks(files = []) {
+  const links = [];
+  const seen = new Set();
+  const add = (url, label, source, line) => {
+    let parsed;
+    try { parsed = new URL(String(url)); } catch { return; }
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return;
+    const normalizedUrl = parsed.href;
+    if (seen.has(normalizedUrl)) return;
+    seen.add(normalizedUrl);
+    links.push({url:normalizedUrl, label:String(label).slice(0, 120), source, line});
+  };
+  for (const file of files) {
+    if (file.kind === 'implementation-code') continue;
+    const lines = String(file.content || '').split(/\r?\n/);
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      const canonical = line.match(/<link\b[^>]*\brel=["']canonical["'][^>]*\bhref=["']([^"']+)["']/i) || line.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']canonical["']/i);
+      if (canonical) add(canonical[1], 'canonical link', file.path, index + 1);
+      const ogUrl = line.match(/<meta\b[^>]*\bproperty=["']og:url["'][^>]*\bcontent=["']([^"']+)["']/i) || line.match(/<meta\b[^>]*\bcontent=["']([^"']+)["'][^>]*\bproperty=["']og:url["']/i);
+      if (ogUrl) add(ogUrl[1], 'og:url', file.path, index + 1);
+      const markdownLink = /\[([^\]]{1,120})\]\((https?:\/\/[^)\s]+)\)/g;
+      let match;
+      while ((match = markdownLink.exec(line))) {
+        if (/published|documentation|specification|\bspec\b|editor'?s draft|latest version|canonical/i.test(match[1])) add(match[2], match[1], file.path, index + 1);
+      }
+    }
+  }
+  return links.slice(0, 25);
+}
+
 function normalized(text) { return String(text ?? '').normalize('NFKC').toLowerCase(); }
 
 const NEGATION_HINT = /\b(?:not|no|never|without|cannot|can't|doesn't|does not|unsupported|missing|lacks|absence of)\b/i;
@@ -294,13 +325,14 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
   return results;
 }
 
-export function newReview({ repo, sha, selectedAreas, questions, evidence, sourceConfig, fileSummary, warnings = [], preset = null, context = {}, issueSummary = [], retrievedAt = null, inventory = null }) {
+export function newReview({ repo, sha, selectedAreas, questions, evidence, sourceConfig, fileSummary, warnings = [], preset = null, context = {}, issueSummary = [], retrievedAt = null, inventory = null, publishedLinks = [] }) {
   return {
     schemaVersion: '0.2.0',
     generatedAt: new Date().toISOString(),
     retrievedAt: retrievedAt || new Date().toISOString(),
     repository: repo,
     commitSha: sha,
+    publishedLinks: Array.isArray(publishedLinks) ? publishedLinks : [],
     selectedAreas: [...selectedAreas],
     preset: preset ? {id:preset.id,title:preset.title,kind:preset.kind,status:preset.status,version:preset.version || 'unversioned'} : {id:'legacy',title:'Legacy starter pack',kind:'unspecified',status:'unofficial',version:'unversioned'},
     context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240), scopePath: String(context.scopePath || '').slice(0, 240), reviewer: String(context.reviewer || '').slice(0, 120)},
@@ -328,6 +360,12 @@ export function validateSavedReview(candidate) {
   if (!Array.isArray(candidate.scope?.warnings) || candidate.scope.warnings.some(w => typeof w !== 'string')) throw new Error('Saved review has invalid warnings.');
   if (!Array.isArray(candidate.questions) || candidate.questions.length > 1000) throw new Error('Saved review has an invalid question list.');
   if (candidate.preset !== null && candidate.preset !== undefined && (typeof candidate.preset !== 'object' || typeof candidate.preset.id !== 'string')) throw new Error('Saved review has an invalid preset.');
+  if (candidate.publishedLinks !== undefined) {
+    if (!Array.isArray(candidate.publishedLinks)) throw new Error('Saved review has invalid published links.');
+    for (const link of candidate.publishedLinks) {
+      if (!link || typeof link.url !== 'string' || !link.url.startsWith('https://') || typeof link.source !== 'string') throw new Error('Saved review has an invalid published link.');
+    }
+  }
   for (const q of candidate.questions) {
     if (!q || typeof q !== 'object' || typeof q.id !== 'string' || typeof q.area !== 'string' || typeof q.prompt !== 'string' || typeof q.why !== 'string') throw new Error('Saved review contains an invalid question.');
     if (!REVIEW_STATES.includes(q.answer)) throw new Error(`Saved review contains an invalid answer for ${q.id}.`);
@@ -411,6 +449,7 @@ export function toMarkdown(review) {
     `- Retrieved: ${review.retrievedAt || review.generatedAt}`,
     ''
   ];
+  if (review.publishedLinks?.length) output.push('## Published/documentation links found', ...review.publishedLinks.map(link => `- ${md(link.url)} (${md(link.label)}; ${md(link.source)}${link.line ? `:${link.line}` : ''})`), '');
   const coverage = review.scope?.inventory?.counts;
   if (coverage) output.push(`- Coverage: ${coverage.discovered} files discovered; ${coverage.documents} documents; ${coverage.selectedDocuments ?? 'unknown'} selected; ${coverage.skippedLarge || 0} too large; ${coverage.skippedUnsupported || 0} unsupported.`, '');
   for (const q of review.questions) {
@@ -440,6 +479,7 @@ function buildPromptData(review, maxChars = 110000) {
     preset: review.preset,
     context: review.context ? {targetType:review.context.targetType, reviewPurpose:review.context.reviewPurpose, requestedDocument:review.context.requestedDocument} : null,
     scopeWarnings: review.scope?.warnings || [],
+    publishedLinks: review.publishedLinks || [],
     promptWarnings: [],
     questions: []
   };

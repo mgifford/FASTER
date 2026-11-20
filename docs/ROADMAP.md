@@ -7,7 +7,7 @@
 - [x] Bounded source, issue and PR discovery; line-level candidate snippets with source links.
 - [x] Draft answers, human rationale, separate AI proposals, Markdown/JSON export, saved-review import.
 - [x] Read-only draft WebMCP integration with no-AI normal-browser fallback.
-- [x] Data validation and 41 unit tests.
+- [x] Data validation and 43 unit tests.
 
 ## Phase 0 remediation (2026-11-19)
 
@@ -22,6 +22,7 @@
 - [x] Issue/PR labels and timestamps displayed with evidence.
 - [x] Markdown/HTML section context, possible-normative hints, contradiction hints and snippet deduplication.
 - [x] Repository homepage/published link from metadata.
+- [x] Candidate canonical/documentation links extracted from selected sources (unverified).
 - [x] Model-neutral evidence/AI-proposal evaluation harness with recorded pilot labels.
 - [x] Reviewer identity, decision timestamps/origin and strict saved-review validation.
 - [x] AI proposals bound to repository, commit and pack version; cross-review application blocked.

@@ -44,6 +44,7 @@ The exported review JSON includes:
   "retrievedAt": "2026-11-19T00:00:00.000Z",
   "repository": {"url": "https://github.com/owner/repository"},
   "commitSha": "<resolved-commit>",
+  "publishedLinks": [],
   "preset": {"id": "general", "title": "General cross-cutting review", "kind": "community-starter", "status": "experimental", "version": "0.2.0"},
   "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": "", "scopePath": "", "reviewer": "Ada Example"},
   "selectedAreas": ["accessibility", "security"],

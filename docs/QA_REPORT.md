@@ -5,14 +5,14 @@ Date: 2026-11-20
 ## Verified
 
 - `npm run validate`: both review packs valid; general pack 6 areas, 20 questions, 20 rules; W3C draft pack 6 areas, 22 questions, 22 rules.
-- `npm test`: **41 tests passed** covering URL/ref validation, deterministic candidate extraction, immutable file citations, decision/proposal separation, document path safety, data exports, pack authority labeling, pack-version consistency, extensionless-document discovery, inventory/type-suggestion logic, word-boundary matching, rule merging, evidence diversity, AI-prompt bounds, saved-review validation, decision provenance, mocked GitHub discovery/retrieval/retry, scoped inventory, evidence history metadata, section/normative/contradiction hints, snippet deduplication, offline evidence evaluation and optional WebMCP tool contracts.
+- `npm test`: **43 tests passed** covering URL/ref validation, deterministic candidate extraction, immutable file citations, decision/proposal separation, document path safety, data exports, pack authority labeling, pack-version consistency, extensionless-document discovery, inventory/type-suggestion logic, word-boundary matching, rule merging, evidence diversity, AI-prompt bounds, saved-review validation, decision provenance, mocked GitHub discovery/retrieval/retry, scoped inventory, evidence history metadata, section/normative/contradiction hints, snippet deduplication, published-link extraction, offline evidence evaluation and optional WebMCP tool contracts.
 - HTML structural static check: 58 unique element IDs, no unmatched `label for` attributes, linked module exists.
 - Local HTTP smoke check: `index.html`, JS modules, pack registry and both question-pack JSON files returned status 200 with non-empty bodies.
 - JavaScript syntax checks: entry modules and core API code parsed successfully with Node.
 
 ## Post-audit verification (2026-11-20, after Phase 0 and Phase 1 discovery work)
 
-- Node 22.20.0: `npm run check` passes, 41/41 tests, both packs validate with versions.
+- Node 22.20.0: `npm run check` passes, 43/43 tests, both packs validate with versions.
 - Headless Chrome 157.0.8103.79 with axe-core 4.10.3: intake and post-scan axe runs report **0 violations**.
 - 320 CSS px emulation: `scrollWidth` equals `clientWidth` (320); the file input no longer overflows.
 - Keyboard check via CDP: changing an answer keeps focus on `answer-ACC-001`; changing a rationale keeps focus on `why-ACC-001`; a completed scan moves focus to `results-heading`.

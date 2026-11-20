@@ -37,3 +37,8 @@ test('The monorepo scope field is present',()=>{
   assert.match(html,/id="scope-path"/);
   assert.match(html,/id="repo-homepage"/);
 });
+
+test('The published-link results panel is present',()=>{
+  assert.match(html,/id="published-details"/);
+  assert.match(html,/id="published-links"/);
+});
