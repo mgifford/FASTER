@@ -97,7 +97,7 @@ async function init() {
   $('include-code').addEventListener('change',()=>{if(discovery)renderInventory(discovery);});
   $('target-type').addEventListener('change',()=>{if(discovery) $('use-type').hidden=!discovery.suggestion || discovery.suggestion.type==='other' || discovery.suggestion.type===$('target-type').value;});
   for(const id of ['area-filter','status-filter','question-filter']) $(id).addEventListener('input',renderQuestions);
-  for(const id of ['repository','ref']) $(id).addEventListener('input',()=>{
+  for(const id of ['repository','ref','scope-path']) $(id).addEventListener('input',()=>{
     if(!discovery)return;
     discovery=null;selectedDocuments.clear();review=null;
     $('inventory').hidden=true;$('results').hidden=true;updateAnalyzeButton();
@@ -161,6 +161,7 @@ function renderInventory(result, focus = false) {
   if (repo.language) meta.push(`Language: ${repo.language}`);
   if (repo.topics?.length) meta.push(`Topics: ${repo.topics.join(', ')}`);
   if (repo.archived) meta.push('Archived repository');
+  if (result.scopePath) meta.push(`Scope: ${result.scopePath}`);
   if (result.rateLimit) meta.push(`GitHub API remaining: ${result.rateLimit.remaining}/${result.rateLimit.limit}`);
   $('repo-meta').textContent = meta.join(' · ');
 
@@ -223,9 +224,11 @@ async function startDiscovery(ev) {
   controller = new AbortController(); setBusy(true);
   try {
     const requestedDocument = $('document-path').value.trim();
+    const scopePath = $('scope-path').value.trim().replace(/\/+$/, '');
     const result = await discoverRepository($('repository').value, $('ref').value, {
       includeCode: $('include-code').checked,
       preferredDocumentPath: requestedDocument,
+      scopePath,
       signal: controller.signal,
       onProgress: updateMessage
     });
@@ -265,7 +268,7 @@ async function analyzeSelected() {
       sourceConfig: currentConfig.sources, fileSummary: sources.files.map(file => file.path),
       issueSummary: sources.issues.map(issue => `${issue.kind === 'pull-request-discussion' ? 'PR' : 'Issue'} #${issue.number} (${issue.kind === 'pull-request-discussion' ? (issue.merged ? 'merged' : issue.state || 'unknown') : (issue.state || 'unknown')})`),
       warnings: [...discovery.warnings, ...sources.warnings], preset: currentConfig.preset,
-      context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim(), reviewer: $('reviewer-name').value.trim()},
+      context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim(), scopePath: $('scope-path').value.trim().replace(/\/+$/, ''), reviewer: $('reviewer-name').value.trim()},
       retrievedAt: sources.retrievedAt, inventory
     });
     $('inventory-status').textContent='Analysis complete for the selected documents. Review the evidence below.';
@@ -333,7 +336,7 @@ function renderQuestion(q) {
   else {
     const list=node('ol',null,'evidence');
     for(const ev of q.evidence){
-      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}${ev.negated?' ; possible negation (verify context)':''}`,'meta'));list.append(li);
+      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}${ev.negated?' ; possible negation (verify context)':''}${ev.labels?.length?`; labels: ${ev.labels.join(', ')}`:''}${ev.createdAt?`; created ${String(ev.createdAt).slice(0,10)}`:''}`,'meta'));list.append(li);
     }
     details.append(list);
   }

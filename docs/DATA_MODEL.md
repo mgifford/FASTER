@@ -45,7 +45,7 @@ The exported review JSON includes:
   "repository": {"url": "https://github.com/owner/repository"},
   "commitSha": "<resolved-commit>",
   "preset": {"id": "general", "title": "General cross-cutting review", "kind": "community-starter", "status": "experimental", "version": "0.2.0"},
-  "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": "", "reviewer": "Ada Example"},
+  "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": "", "scopePath": "", "reviewer": "Ada Example"},
   "selectedAreas": ["accessibility", "security"],
   "scope": {
     "filesInspected": [],
@@ -71,7 +71,7 @@ The inventory is the discovery result, not proof that every file was inspected. 
 
 ## Evidence requirements
 
-Record `id`, `questionId`, `source`, `url`, `line` if available, `evidenceType`, `sourceAuthority`, `strength`, `snippet`, and matched phrases. Future evidence records should include retrieval time, content hash, normative/informative classification, source version, temporal validity, contradiction markers and note whether an issue/PR was merged.
+Record `id`, `questionId`, `source`, `url`, `line` if available, `evidenceType`, `sourceAuthority`, `strength`, `snippet`, matched phrases, labels and discussion timestamps where available. Future evidence records should include retrieval time, content hash, normative/informative classification, source version, temporal validity, contradiction markers and note whether an issue/PR was merged.
 
 **Source hierarchy matters:** normative specification > approved decision/release metadata > actual implementation/tests > explanatory documentation > open issues/unmerged PRs > LLM interpretation. The exact order varies by the type of claim. For example, code can verify code behavior but cannot alone demonstrate specification normative guarantees.
 

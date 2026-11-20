@@ -55,10 +55,12 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Human decisions and rationales, unapproved AI suggestion import with verified evidence IDs, saved-review JSON import, Markdown and JSON export.
 - Reviewer identity, decision timestamps and decision origin (`human` vs `ai-accepted`) are recorded and exported; reviewer identity is deliberately excluded from the AI evidence prompt.
 - Saved-review JSON is strictly validated; AI proposals are bound to the repository, commit and pack version and cannot be applied across reviews.
+- A model-neutral evidence/AI-proposal evaluation harness (`npm run evaluate`) with recorded pilot labels; no model call, network call or Cloudflare dependency.
 - Read-only, feature-detected draft browser WebMCP tools (`document.modelContext`), with functional normal-browser fallback.
 - Project metadata and a transparent project-type suggestion (never auto-confirmed); the reviewer applies it explicitly.
-- Issue/PR samples include labels, timestamps and verified merged status where available; mutable-source warnings remain.
-- Data pack registry with explicit pack versions, validation scripts, **32 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
+- Optional monorepo subdirectory scope, ranked document inventory, and a bounded in-memory tree/blob cache keyed by immutable SHA.
+- Issue/PR samples include labels, timestamps and verified merged status, displayed with the evidence and carried into exports; mutable-source warnings remain.
+- Data pack registry with explicit pack versions, validation scripts, **38 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
 - GitHub Pages deployment through GitHub Actions, gated by the `npm run check` CI job.
 
 ## Not implemented
@@ -93,6 +95,8 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 | `docs/IMPLEMENTATION_PROMPT.md` | **Full consolidated handoff prompt**, phased implementation and acceptance criteria |
 | `docs/BASELINE.md` | Phase 0 audit, known limitations and remediation priority |
 | `docs/PILOT.md` | Preliminary Django security/i18n pilot and labelled evidence |
+| `docs/EVALUATION.md` | Offline evidence/AI-proposal evaluation harness |
+| `evaluations/` | Pilot review snapshot and 25-passage label fixture |
 | `docs/DEPLOYMENT.md` | GitHub Pages, AGPL source offer and future Cloudflare MCP plan |
 | `docs/` | Architecture, UX, data schemas, governance, security, WebMCP, AI and roadmap |
 | `AGENTS.md` | Instructions for coding agents |

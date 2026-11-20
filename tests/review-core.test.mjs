@@ -133,7 +133,7 @@ test('Multiple rules for one question are merged',()=>{
 test('Evidence diversity keeps discussion counterevidence and merged-PR state',()=>{
   const question={id:'Q-DIVERSE',area:'accessibility',prompt:'Keyboard?',why:'Test.'};
   const lines=Array.from({length:10},(_,i)=>`keyboard line ${i}`).join('\n');
-  const issue={number:1,title:'Keyboard gap',body:'keyboard is broken',html_url:'https://github.com/o/r/issues/1',state:'open',kind:'issue-discussion',merged:false};
+  const issue={number:1,title:'Keyboard gap',body:'keyboard is broken',html_url:'https://github.com/o/r/issues/1',state:'open',kind:'issue-discussion',merged:false,labels:['accessibility'],createdAt:'2026-11-01T00:00:00Z'};
   const evidence=findEvidence({
     files:[{path:'doc.md',content:lines,kind:'repository-document'}],
     issues:[issue],
@@ -141,7 +141,10 @@ test('Evidence diversity keeps discussion counterevidence and merged-PR state',(
     questions:[question],repoUrl:'https://github.com/o/r',sha:'abc',maxPerQuestion:6
   });
   assert.equal(evidence[question.id].length,6);
-  assert.ok(evidence[question.id].some(item=>item.evidenceType==='issue-discussion'));
+  const discussion=evidence[question.id].find(item=>item.evidenceType==='issue-discussion');
+  assert.ok(discussion);
+  assert.deepEqual(discussion.labels,['accessibility']);
+  assert.equal(discussion.createdAt,'2026-11-01T00:00:00Z');
   const prEvidence=findEvidence({
     files:[],issues:[{number:2,title:'Fix keyboard',body:'keyboard fixed',html_url:'https://github.com/o/r/pull/2',state:'closed',merged:true,mergedAt:'2026-01-01T00:00:00Z',kind:'pull-request-discussion'}],
     rules:[{id:'r',questionId:question.id,phrases:['keyboard']}],questions:[question],repoUrl:'https://github.com/o/r',sha:'abc'
@@ -214,4 +217,21 @@ test('Decisions can record AI origin and render provenance in Markdown',()=>{
   assert.match(markdown,/Reviewer: Ada Example/);
   assert.match(markdown,/origin ai-accepted/);
   assert.match(markdown,/recorded /);
+});
+
+test('A monorepo scope limits the inventory without losing counts',()=>{
+  const tree=[
+    {path:'README.md',size:10,type:'blob',sha:'r'},
+    {path:'docs/a.md',size:20,type:'blob',sha:'a'},
+    {path:'docs/sub/b.md',size:30,type:'blob',sha:'b'},
+    {path:'packages/other/c.md',size:40,type:'blob',sha:'c'},
+    {path:'src/index.js',size:50,type:'blob',sha:'i'}
+  ];
+  const inventory=buildInventory(tree,{scopePath:'docs'});
+  assert.equal(inventory.scope,'docs');
+  assert.deepEqual(inventory.documents.map(file=>file.path),['docs/a.md','docs/sub/b.md']);
+  assert.equal(inventory.counts.documents,2);
+  assert.equal(inventory.counts.code,0);
+  assert.equal(inventory.counts.discovered,2);
+  assert.deepEqual(selectFiles(tree,{scopePath:'docs'}).map(file=>file.path),['docs/a.md','docs/sub/b.md']);
 });

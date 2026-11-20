@@ -24,12 +24,12 @@ Status: **review complete; Phase 0 findings recorded; F1-F7, F9, F14 and F15 rem
 | F8 substring matching false positives | **Partial** | Word-boundary terms, NFKC normalization and a possible-negation hint are implemented; semantic/generic-word ambiguity remains Phase 2 work. The pilot predates this change. |
 | F9 AI prompt truncation | **Fixed** | Structurally bounded evidence bundle, valid JSON, prompt warnings and omitted counts; test covers 1,000 questions. |
 | F10 inventory not visible | **Fixed** | Discovery renders selected/skipped counts, sizes, reasons, skipped-file limits and a 16-document selector. |
-| F11 preflight metadata/type suggestion | **Partial** | Metadata, API budget and an explicit type suggestion/confirmation are implemented; monorepo scoping and canonical/published-doc detection are not. |
-| F12 issue/PR provenance | **Partial** | Labels, timestamps and verified merged status are carried into evidence; comment links, claim comparison and UI history views remain. |
-| F13 test coverage / CI | **Partial** | 32 tests plus CI, including a mocked GitHub adapter; no DOM integration browser fixture yet. |
+| F11 preflight metadata/type suggestion | **Partial** | Metadata, API budget, an explicit type suggestion/confirmation and monorepo subdirectory scope are implemented; canonical/published-doc detection is not. |
+| F12 issue/PR provenance | **Partial** | Labels, dates and verified merged status are carried into evidence and displayed; comment links, claim comparison and a dedicated history view remain. |
+| F13 test coverage / CI | **Partial** | 38 tests plus CI, including a mocked GitHub adapter, scoped inventory and an offline evaluation harness; no DOM integration browser fixture yet. |
 | F14 imported-data binding | **Fixed** | Saved reviews are strictly validated; AI proposals carry a repository/commit/pack binding and mismatched proposals cannot be applied. |
 | F15 decision provenance | **Fixed** | Optional reviewer name, decision timestamp and `human`/`ai-accepted` origin are recorded in the review, cards and Markdown. Sign-off remains a future state. |
-| F16 rate limits/retry | **Partial** | API budget is displayed, pack switching is guarded, and bounded 429/403/5xx retries are implemented; no persistent cache or full secondary-limit backoff. |
+| F16 rate limits/retry | **Partial** | API budget is displayed, pack switching is guarded, bounded 429/403/5xx retries and a bounded in-memory SHA cache are implemented; no persistent/server cache or full secondary-limit backoff. |
 
 
 This document is the Phase 0 artifact requested by `docs/IMPLEMENTATION_PROMPT.md` §4 and
@@ -104,7 +104,7 @@ w3c-horizontal-starter: valid 6 areas, 22 questions, 22 rules.
 # fail 0
 ```
 
-The data validator and all 12 Node tests passed at audit time (the suite now has 32 tests after the Phase 0, Phase 1 and provenance regression tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
+The data validator and all 12 Node tests passed at audit time (the suite now has 38 tests after the Phase 0, Phase 1, provenance and evaluation tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
 
 ### Tests that were not in the repository
 
@@ -437,7 +437,7 @@ Recommended sequence before Phase 1 acceptance:
    SHA with 25 AI-assisted labels, 70% precision and 74% recall. Next: independent human
    confirmation, re-measurement after the F8 change, and a second repository shape.
 4. **Completed:** decision timestamp/origin (F15), saved-review/AI binding (F14), mocked
-   adapter tests (F13) and bounded retry behaviour (F16).
+   adapter tests (F13), bounded retry behaviour (F16) and an offline evaluation harness.
 5. Next: structured/semantic matching (F8), DOM integration tests (F13), an optional cache
    (F16), canonical/published-document detection and monorepo scoping.
 6. Keep `README.md`, `docs/ROADMAP.md`, `docs/QA_REPORT.md` and this baseline current. Stop

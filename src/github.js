@@ -3,6 +3,27 @@ import {parseGitHubUrl,safeRef,safeRepositoryPath,selectFiles,detectFileType,bui
 const API = 'https://api.github.com';
 let lastRateLimit = null;
 
+const TREE_CACHE_LIMIT = 10;
+const BLOB_CACHE_LIMIT = 80;
+const treeCache = new Map();
+const blobCache = new Map();
+
+function cacheGet(map, key) {
+  if (!map.has(key)) return undefined;
+  const value = map.get(key);
+  map.delete(key); map.set(key, value);
+  return value;
+}
+
+function cacheSet(map, key, value, limit) {
+  map.set(key, value);
+  while (map.size > limit) map.delete(map.keys().next().value);
+}
+
+export function clearCache() {
+  treeCache.clear(); blobCache.clear();
+}
+
 function retryAfterMs(value) {
   if (!value) return null;
   const seconds = Number(value);
@@ -101,9 +122,10 @@ function mapPull(i) {
   };
 }
 
-export async function discoverRepository(url, ref, { includeCode = false, preferredDocumentPath = '', signal, onProgress = () => {} } = {}) {
+export async function discoverRepository(url, ref, { includeCode = false, preferredDocumentPath = '', scopePath = '', signal, onProgress = () => {} } = {}) {
   const repo = parseGitHubUrl(url);
   const documentPath = safeRepositoryPath(preferredDocumentPath);
+  const scope = safeRepositoryPath(scopePath);
   const prefix = `/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
   onProgress('Resolving repository metadata and commit...');
   const info = await githubGet(prefix, signal);
@@ -113,16 +135,22 @@ export async function discoverRepository(url, ref, { includeCode = false, prefer
   const commit = await githubGet(`${prefix}/commits/${encodeURIComponent(preferredRef)}`, signal);
   const sha = commit.sha;
   onProgress('Listing files at the pinned commit...');
-  const treeResponse = await githubGet(`${prefix}/git/trees/${encodeURIComponent(commit.commit.tree.sha)}?recursive=1`, signal);
+  const treeSha = commit.commit.tree.sha;
+  let treeResponse = cacheGet(treeCache, treeSha);
+  if (!treeResponse) {
+    treeResponse = await githubGet(`${prefix}/git/trees/${encodeURIComponent(treeSha)}?recursive=1`, signal);
+    cacheSet(treeCache, treeSha, treeResponse, TREE_CACHE_LIMIT);
+  }
   const tree = Array.isArray(treeResponse.tree) ? treeResponse.tree : [];
-  const inventory = buildInventory(tree, {includeCode, preferredDocumentPath:documentPath});
-  const suggestion = suggestProjectType({repo:{...metadata, description:metadata.description}, tree});
+  const inventory = buildInventory(tree, {includeCode, preferredDocumentPath:documentPath, scopePath:scope});
+  const scopedTree = scope ? tree.filter(file => file.path === scope || file.path.startsWith(`${scope}/`)) : tree;
+  const suggestion = suggestProjectType({repo:{...metadata, description:metadata.description}, tree:scopedTree});
   const warnings = [];
   if (treeResponse.truncated) warnings.push('GitHub truncated the tree; document coverage is incomplete.');
   if (metadata.archived) warnings.push('This repository is archived; its current branch may not receive fixes.');
   if (documentPath && !inventory.documents.some(file => file.path === documentPath)) warnings.push(`Requested document is not a supported document candidate: ${documentPath}. Check its path, size, or format.`);
-  if (!inventory.counts.documents) warnings.push('No reviewable documents were found in the sampled tree. Add a document path or choose a repository with a README.');
-  return {repo:{...repo, ...metadata}, sha, tree, inventory, suggestion, warnings, rateLimit:lastRateLimit};
+  if (!inventory.counts.documents) warnings.push(scope ? `No reviewable documents were found within the scope ${scope}.` : 'No reviewable documents were found in the sampled tree. Add a document path or choose a repository with a README.');
+  return {repo:{...repo, ...metadata}, sha, tree, inventory, suggestion, warnings, scopePath:scope || null, rateLimit:lastRateLimit};
 }
 
 export async function fetchRepositorySources({repo, sha, tree = [], paths = [], signal, onProgress = () => {}} = {}) {
@@ -134,9 +162,14 @@ export async function fetchRepositorySources({repo, sha, tree = [], paths = [], 
     if (!file) { warnings.push(`Selected file was not present in the pinned tree: ${path}`); continue; }
     onProgress(`Reading source ${index + 1}/${uniquePaths.length}: ${path}`);
     try {
-      const blob = await githubGet(`/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/git/blobs/${encodeURIComponent(file.sha)}`, signal);
-      if (blob.encoding !== 'base64') { warnings.push(`Skipped unsupported encoding: ${path}`); continue; }
-      files.push({path, content:decodeBase64(blob.content).slice(0, 140000), kind:detectFileType(path) === 'code' ? 'implementation-code' : 'repository-document'});
+      let content = cacheGet(blobCache, file.sha);
+      if (content === undefined) {
+        const blob = await githubGet(`/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/git/blobs/${encodeURIComponent(file.sha)}`, signal);
+        if (blob.encoding !== 'base64') { warnings.push(`Skipped unsupported encoding: ${path}`); continue; }
+        content = decodeBase64(blob.content).slice(0, 140000);
+        cacheSet(blobCache, file.sha, content, BLOB_CACHE_LIMIT);
+      }
+      files.push({path, content, kind:detectFileType(path) === 'code' ? 'implementation-code' : 'repository-document'});
     } catch (err) {
       if (signal?.aborted) throw err;
       warnings.push(`Could not read ${path}: ${err.message}`);
@@ -168,7 +201,7 @@ export async function fetchRepositorySources({repo, sha, tree = [], paths = [], 
 
 export async function inspectRepository(url, ref, options = {}) {
   const discovery = await discoverRepository(url, ref, options);
-  const chosen = selectFiles(discovery.tree, {includeCode:options.includeCode, preferredDocumentPath:options.preferredDocumentPath});
+  const chosen = selectFiles(discovery.tree, {includeCode:options.includeCode, preferredDocumentPath:options.preferredDocumentPath, scopePath:options.scopePath});
   const sources = await fetchRepositorySources({repo:discovery.repo, sha:discovery.sha, tree:discovery.tree, paths:chosen.map(file => file.path), signal:options.signal, onProgress:options.onProgress});
   return {...discovery, ...sources, warnings:[...discovery.warnings, ...sources.warnings]};
 }

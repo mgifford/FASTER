@@ -1,0 +1,472 @@
+{
+  "schemaVersion": "0.2.0",
+  "generatedAt": "2026-11-20T10:43:32.587Z",
+  "retrievedAt": "2026-11-20T10:10:07.004Z",
+  "repository": {
+    "owner": "django",
+    "repo": "django",
+    "url": "https://github.com/django/django",
+    "name": "django",
+    "description": "The Web framework for perfectionists with deadlines.",
+    "defaultBranch": "main",
+    "topics": [
+      "apps",
+      "django",
+      "framework",
+      "models",
+      "orm",
+      "python",
+      "templates",
+      "views",
+      "web"
+    ],
+    "license": "BSD-3-Clause",
+    "licenseName": "BSD 3-Clause \"New\" or \"Revised\" License",
+    "language": "Python",
+    "archived": false,
+    "stars": 91878,
+    "forks": 35203,
+    "updatedAt": "2026-11-20T09:35:28Z",
+    "htmlUrl": "https://github.com/django/django"
+  },
+  "commitSha": "c67d872765e05ebd009fadf7de8d834b01bae9e4",
+  "selectedAreas": [
+    "internationalization",
+    "security"
+  ],
+  "preset": {
+    "id": "general",
+    "title": "General cross-cutting review",
+    "kind": "community-starter",
+    "status": "experimental",
+    "version": "0.2.0"
+  },
+  "context": {
+    "targetType": "library",
+    "reviewPurpose": "Pilot evidence evaluation",
+    "requestedDocument": "",
+    "reviewer": ""
+  },
+  "questionnaireSources": [],
+  "scope": {
+    "filesInspected": [
+      "docs/topics/i18n/index.txt",
+      "docs/internals/security.txt",
+      "docs/releases/security.txt",
+      "docs/topics/security.txt",
+      ".github/SECURITY.md"
+    ],
+    "discussionsInspected": [],
+    "warnings": [
+      "Only the selected source files, up to 20 recently updated issues and up to 10 recently updated PRs were searched. Missing evidence is not proof of absence.",
+      "Issue and PR pages are mutable; discussions are not pinned to the source commit and cannot prove merged behavior. External documents, generated output and complete history are not indexed."
+    ],
+    "inventory": {
+      "discovered": 7104,
+      "documents": 1112,
+      "code": 2581,
+      "skippedLarge": 14,
+      "skippedUnsupported": 2774,
+      "skippedEmpty": 623,
+      "selectedDocuments": 5,
+      "selectedCode": 0,
+      "selectedPaths": [
+        "docs/topics/i18n/index.txt",
+        "docs/internals/security.txt",
+        "docs/releases/security.txt",
+        "docs/topics/security.txt",
+        ".github/SECURITY.md"
+      ]
+    }
+  },
+  "reviewStatus": "draft-evidence-assisted-review-not-a-conformance-determination",
+  "questions": [
+    {
+      "id": "I18N-001",
+      "area": "internationalization",
+      "prompt": "Does the documentation explain locale-aware formats, translation and Unicode handling?",
+      "why": "Pilot question.",
+      "answer": "needs-investigation",
+      "reviewState": "unreviewed",
+      "evidence": [
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/topics/i18n/index.txt",
+          "line": 17,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/topics/i18n/index.txt#L17",
+          "snippet": "application to offer its content in languages and formats tailored to the",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E1"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/internals/security.txt",
+          "line": 191,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/internals/security.txt#L191",
+          "snippet": "Content displayed by the Django Template Language must be under 100 KB",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E2"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/releases/security.txt",
+          "line": 109,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/releases/security.txt#L109",
+          "snippet": "``get_supported_language_variant()``.",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E3"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/topics/i18n/index.txt",
+          "line": 20,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/topics/i18n/index.txt#L20",
+          "snippet": "Django has full support for :doc:`translation of text",
+          "matchedTerms": [
+            "translation"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E4"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/internals/security.txt",
+          "line": 194,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/internals/security.txt#L194",
+          "snippet": "The Django Template Language (DTL) is designed for building the content needed",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E5"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/releases/security.txt",
+          "line": 164,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/releases/security.txt#L164",
+          "snippet": "Potential denial-of-service vulnerability in ``check_for_language()``.",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E6"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/topics/i18n/index.txt",
+          "line": 21,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/topics/i18n/index.txt#L21",
+          "snippet": "</topics/i18n/translation>`, :doc:`formatting of dates, times and numbers",
+          "matchedTerms": [
+            "translation",
+            "i18n"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E7"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/internals/security.txt",
+          "line": 248,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/internals/security.txt#L248",
+          "snippet": "Following the widespread availability of large language models (LLMs), the",
+          "matchedTerms": [
+            "language"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E8"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/releases/security.txt",
+          "line": 386,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/releases/security.txt#L386",
+          "snippet": "Potential denial-of-service vulnerability in ``URLField`` via Unicode",
+          "matchedTerms": [
+            "unicode"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E9"
+        },
+        {
+          "questionId": "I18N-001",
+          "evidenceType": "pull-request-discussion",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "discussion-only",
+          "source": "PR #21970 (open): Refs #34597 -- Avoided outer joins for reverse relation absence.",
+          "line": null,
+          "url": "https://github.com/django/django/pull/21970",
+          "snippet": "`Blog.objects.filter(Q(is_published=True) & ~Q(translation=None))` retains a",
+          "matchedTerms": [
+            "translation"
+          ],
+          "sourceState": "open",
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "I18N-001-E10"
+        }
+      ],
+      "reviewerRationale": "",
+      "aiProposal": null
+    },
+    {
+      "id": "SEC-001",
+      "area": "security",
+      "prompt": "Does the documentation address threats, trust boundaries and vulnerability handling?",
+      "why": "Pilot question.",
+      "answer": "needs-investigation",
+      "reviewState": "unreviewed",
+      "evidence": [
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/internals/security.txt",
+          "line": 2,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/internals/security.txt#L2",
+          "snippet": "Django's security policy",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E1"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/releases/security.txt",
+          "line": 2,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/releases/security.txt#L2",
+          "snippet": "Archive of security issues",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E2"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/topics/security.txt",
+          "line": 2,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/topics/security.txt#L2",
+          "snippet": "Security in Django",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E3"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": ".github/SECURITY.md",
+          "line": 1,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/.github/SECURITY.md#L1",
+          "snippet": "# Django Security Policies",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E4"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "pull-request-discussion",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "discussion-only",
+          "source": "PR #22316 (closed): Fixed #37522 -- Doc'd View.query clash in 6.2 release notes.",
+          "line": null,
+          "url": "https://github.com/django/django/pull/22316",
+          "snippet": "- [x] This PR **does not** disclose a security vulnerability (see [vulnerability reporting](https://docs.djangoproject.com/en/stable/internals/security/)).",
+          "matchedTerms": [
+            "security",
+            "vulnerab"
+          ],
+          "sourceState": "closed",
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E5"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "pull-request-discussion",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "discussion-only",
+          "source": "PR #22314 (open): Fixed #37508 -- Fixed FETCH_PEERS related fetching with deleted peers.",
+          "line": null,
+          "url": "https://github.com/django/django/pull/22314",
+          "snippet": "- [x] This PR **does not** disclose a security vulnerability (see [vulnerability reporting](https://docs.djangoproject.com/en/stable/internals/security/)).",
+          "matchedTerms": [
+            "security",
+            "vulnerab"
+          ],
+          "sourceState": "open",
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E6"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/internals/security.txt",
+          "line": 6,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/internals/security.txt#L6",
+          "snippet": "reporting and disclosure of security-related issues. As such, we've",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E7"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/releases/security.txt",
+          "line": 6,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/releases/security.txt#L6",
+          "snippet": "reporting and disclosure of security-related issues, as outlined in",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E8"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": "docs/topics/security.txt",
+          "line": 5,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/docs/topics/security.txt#L5",
+          "snippet": "This document is an overview of Django's security features. It includes advice",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E9"
+        },
+        {
+          "questionId": "SEC-001",
+          "evidenceType": "repository-document",
+          "strength": "candidate-keyword-match",
+          "sourceAuthority": "document-candidate",
+          "source": ".github/SECURITY.md",
+          "line": 3,
+          "url": "https://github.com/django/django/blob/c67d872765e05ebd009fadf7de8d834b01bae9e4/.github/SECURITY.md#L3",
+          "snippet": "Please see https://www.djangoproject.com/security/.",
+          "matchedTerms": [
+            "security"
+          ],
+          "sourceState": null,
+          "merged": false,
+          "mergedAt": null,
+          "retrievedAt": "2026-11-20T10:10:07.004Z",
+          "id": "SEC-001-E10"
+        }
+      ],
+      "reviewerRationale": "",
+      "aiProposal": null
+    }
+  ]
+}

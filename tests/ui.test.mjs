@@ -32,3 +32,7 @@ test('The discovery inventory is present and focusable',()=>{
 test('The reviewer identity field is present',()=>{
   assert.match(html,/id="reviewer-name"/);
 });
+
+test('The monorepo scope field is present',()=>{
+  assert.match(html,/id="scope-path"/);
+});

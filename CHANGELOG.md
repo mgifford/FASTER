@@ -15,7 +15,10 @@
 - Added strict saved-review validation and bound AI proposals to repository, commit and pack version; mismatched suggestions cannot be applied.
 - Added optional reviewer identity, decision timestamps and decision origin to reviews and Markdown exports.
 - Added bounded retries for 429/403/5xx GitHub responses with reset guidance, low-budget warnings and mocked adapter tests.
-- Expanded the test suite from 12 to 32 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
+- Added bounded in-memory tree/blob caching by immutable SHA.
+- Added an optional monorepo subdirectory scope and displayed issue/PR labels and dates with evidence.
+- Added an offline, model-neutral evidence/AI-proposal evaluation CLI with a recorded Django review/label fixture; no Cloudflare or model API is required.
+- Expanded the test suite from 12 to 38 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
 
 ## 0.2.0 - Generic-first consolidation (2026-11-19)
 

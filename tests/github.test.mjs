@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {discoverRepository, fetchRepositorySources} from '../src/github.js';
+import {discoverRepository, fetchRepositorySources, clearCache} from '../src/github.js';
 
 const encoder = text => Buffer.from(text).toString('base64');
 
@@ -47,6 +47,7 @@ function installFetch(router, handler) {
 }
 
 test('Discovery and source retrieval are bounded and preserve provenance', async () => {
+  clearCache();
   const originalFetch = globalThis.fetch;
   const calls = installFetch(repoRouter());
   try {
@@ -71,6 +72,7 @@ test('Discovery and source retrieval are bounded and preserve provenance', async
 });
 
 test('A bounded 429 retry succeeds when Retry-After is short', async () => {
+  clearCache();
   const originalFetch = globalThis.fetch;
   let first = true;
   installFetch(repoRouter(), (href) => {
@@ -87,9 +89,40 @@ test('A bounded 429 retry succeeds when Retry-After is short', async () => {
 });
 
 test('A primary rate-limit failure is reported with reset guidance', async () => {
+  clearCache();
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response('{}', {status:403, headers:{'x-ratelimit-limit':'60', 'x-ratelimit-remaining':'0', 'x-ratelimit-reset':'1795176000'}});
   try {
     await assert.rejects(() => discoverRepository('https://github.com/o/r', 'main'), /rate limit reached/i);
   } finally { globalThis.fetch = originalFetch; }
+});
+
+test('Immutable tree and blob responses are cached without caching mutable discussions', async () => {
+  clearCache();
+  const originalFetch = globalThis.fetch;
+  const calls = installFetch(repoRouter());
+  try {
+    await discoverRepository('https://github.com/o/r', 'main');
+    await discoverRepository('https://github.com/o/r', 'main');
+    assert.equal(calls.filter(url => url.includes('/git/trees/')).length, 1);
+    const discovery = await discoverRepository('https://github.com/o/r', 'main');
+    await fetchRepositorySources({repo:discovery.repo, sha:discovery.sha, tree:discovery.tree, paths:['README.md','src/index.js']});
+    await fetchRepositorySources({repo:discovery.repo, sha:discovery.sha, tree:discovery.tree, paths:['README.md','src/index.js']});
+    assert.equal(calls.filter(url => url.includes('/git/blobs/')).length, 2);
+    assert.equal(calls.filter(url => url.includes('/issues?')).length, 2);
+  } finally { globalThis.fetch = originalFetch; clearCache(); }
+});
+
+test('Discovery can be scoped to a monorepo subdirectory', async () => {
+  clearCache();
+  const originalFetch = globalThis.fetch;
+  installFetch(repoRouter());
+  try {
+    const discovery = await discoverRepository('https://github.com/o/r', 'main', {scopePath:'docs'});
+    assert.equal(discovery.scopePath, 'docs');
+    assert.equal(discovery.inventory.counts.documents, 1);
+    assert.equal(discovery.inventory.counts.code, 0);
+    assert.equal(discovery.inventory.documents[0].path, 'docs/security.md');
+    assert.ok(discovery.inventory.counts.discovered < 7);
+  } finally { globalThis.fetch = originalFetch; clearCache(); }
 });
