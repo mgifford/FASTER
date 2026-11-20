@@ -45,7 +45,7 @@ The exported review JSON includes:
   "repository": {"url": "https://github.com/owner/repository"},
   "commitSha": "<resolved-commit>",
   "preset": {"id": "general", "title": "General cross-cutting review", "kind": "community-starter", "status": "experimental", "version": "0.2.0"},
-  "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": ""},
+  "context": {"targetType": "library", "reviewPurpose": "readiness review", "requestedDocument": "", "reviewer": "Ada Example"},
   "selectedAreas": ["accessibility", "security"],
   "scope": {
     "filesInspected": [],
@@ -59,6 +59,9 @@ The exported review JSON includes:
     "reviewState": "unreviewed",
     "evidence": [],
     "reviewerRationale": "",
+    "reviewedAt": null,
+    "reviewer": "",
+    "decisionOrigin": null,
     "aiProposal": null
   }]
 }
@@ -95,4 +98,4 @@ Do not collapse these dimensions:
 ]
 ```
 
-Use actual question and evidence IDs from the analyzed pack. The importer rejects unknown references and leaves all decisions unapproved.
+Use actual question and evidence IDs from the analyzed pack. The importer rejects unknown references, records the import binding (`repository`, `commitSha`, `presetId`, `presetVersion`) and leaves all decisions unapproved. A later human decision records `reviewedAt`, `reviewer` and `decisionOrigin` (`human` or `ai-accepted`).

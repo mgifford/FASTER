@@ -28,3 +28,7 @@ test('The discovery inventory is present and focusable',()=>{
   assert.match(html,/id="document-list"/);
   assert.match(html,/id="analyze-selected" type="button" disabled/);
 });
+
+test('The reviewer identity field is present',()=>{
+  assert.match(html,/id="reviewer-name"/);
+});

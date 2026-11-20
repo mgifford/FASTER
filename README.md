@@ -53,10 +53,12 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Bounded retrieval: discovery returns a ranked inventory with selected/skipped counts, file sizes, reasons and tree-truncation warnings; analysis fetches **up to 16 selected documents, 4 code files, 20 issues, and 10 PRs**. GitHub requests may fail or be rate-limited; the UI reports the remaining API budget.
 - Source provenance categories and keyword discovery. Candidate matches **never** mean a question is met, not met or inapplicable.
 - Human decisions and rationales, unapproved AI suggestion import with verified evidence IDs, saved-review JSON import, Markdown and JSON export.
+- Reviewer identity, decision timestamps and decision origin (`human` vs `ai-accepted`) are recorded and exported; reviewer identity is deliberately excluded from the AI evidence prompt.
+- Saved-review JSON is strictly validated; AI proposals are bound to the repository, commit and pack version and cannot be applied across reviews.
 - Read-only, feature-detected draft browser WebMCP tools (`document.modelContext`), with functional normal-browser fallback.
 - Project metadata and a transparent project-type suggestion (never auto-confirmed); the reviewer applies it explicitly.
 - Issue/PR samples include labels, timestamps and verified merged status where available; mutable-source warnings remain.
-- Data pack registry with explicit pack versions, validation scripts, **25 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
+- Data pack registry with explicit pack versions, validation scripts, **32 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
 - GitHub Pages deployment through GitHub Actions, gated by the `npm run check` CI job.
 
 ## Not implemented
@@ -109,7 +111,7 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 
 ## What to build next
 
-The most valuable next step is the **first non-W3C labelled pilot** against the new inventory, followed by structured evidence extraction (word-boundary/normative parsing), canonical/published-document detection and review continuity. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for the sequential roadmap. The remaining baseline findings (F8, F13-F16) are tracked in [`docs/BASELINE.md`](docs/BASELINE.md).
+The most valuable next step is the **first non-W3C labelled pilot** against the new inventory, followed by structured evidence extraction (word-boundary/normative parsing), canonical/published-document detection and review continuity. See `START_HERE.md` and `docs/IMPLEMENTATION_PROMPT.md` for the sequential roadmap. The remaining baseline findings (F8, F11-F13 and F16) are tracked in [`docs/BASELINE.md`](docs/BASELINE.md).
 
 ## License, source and authority
 
