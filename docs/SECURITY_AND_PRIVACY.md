@@ -13,7 +13,8 @@ Trusted code: locally served frontend and static data packs reviewed within this
 - Bounded file count and file size, issue/PR sample size and AI prompt size.
 - Repository text placed into DOM via `textContent`, not `innerHTML`.
 - Exports require direct user actions. No automatic GitHub writes or AI API calls.
-- AI-import proposals require known question and evidence IDs and never overwrite human decisions automatically.
+- AI-import proposals require known question and evidence IDs, carry a repository/commit/pack binding, and never overwrite human decisions automatically.
+- Reviewer identity is stored only in the local review/export and is stripped from the AI evidence prompt.
 - Browser WebMCP operations are read-only and feature-detected.
 
 ## Gaps and recommended protections

@@ -11,7 +11,11 @@
 - Added a two-step discovery flow: repository metadata and API budget, a ranked document inventory with selected/skipped counts and reasons, explicit project-type suggestion/confirmation, and a 16-document selector before analysis.
 - Added issue/PR labels, timestamps and verified merged state to evidence; added retrieval timestamps and inventory coverage to the review record and Markdown export.
 - Merged multiple rules per question, round-robined evidence across documents/discussions/code, and replaced AI-prompt slicing with a structurally bounded, valid JSON bundle.
-- Expanded the test suite from 12 to 25 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
+- Replaced substring matching with word-boundary terms, NFKC normalization and a possible-negation hint.
+- Added strict saved-review validation and bound AI proposals to repository, commit and pack version; mismatched suggestions cannot be applied.
+- Added optional reviewer identity, decision timestamps and decision origin to reviews and Markdown exports.
+- Added bounded retries for 429/403/5xx GitHub responses with reset guidance, low-budget warnings and mocked adapter tests.
+- Expanded the test suite from 12 to 32 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
 
 ## 0.2.0 - Generic-first consolidation (2026-11-19)
 

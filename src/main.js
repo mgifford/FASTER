@@ -1,5 +1,5 @@
 import { discoverRepository, fetchRepositorySources } from './github.js';
-import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, toMarkdown, toAIPrompt } from './review-core.js';
+import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, validateSavedReview, toMarkdown, toAIPrompt } from './review-core.js';
 import { registerWebMCP } from './webmcp.js';
 
 const $ = id => document.getElementById(id);
@@ -201,6 +201,7 @@ function renderInventory(result, focus = false) {
   if (counts.skippedUnsupported) skipped.push(`${counts.skippedUnsupported} unsupported file type(s) were ignored.`);
   if (counts.skippedEmpty) skipped.push(`${counts.skippedEmpty} empty file(s) were ignored.`);
   if (result.inventory.skippedLarge.length) skipped.push(`Examples of oversized files: ${result.inventory.skippedLarge.join(', ')}.`);
+  if (result.rateLimit && result.rateLimit.remaining < 5) skipped.push(`Low GitHub API budget: ${result.rateLimit.remaining}/${result.rateLimit.limit} remaining.`);
   skipped.push(...result.warnings);
   $('skipped-list').replaceChildren(...skipped.map(text => node('li', text)));
   $('skipped-details').hidden = !skipped.length;
@@ -264,7 +265,7 @@ async function analyzeSelected() {
       sourceConfig: currentConfig.sources, fileSummary: sources.files.map(file => file.path),
       issueSummary: sources.issues.map(issue => `${issue.kind === 'pull-request-discussion' ? 'PR' : 'Issue'} #${issue.number} (${issue.kind === 'pull-request-discussion' ? (issue.merged ? 'merged' : issue.state || 'unknown') : (issue.state || 'unknown')})`),
       warnings: [...discovery.warnings, ...sources.warnings], preset: currentConfig.preset,
-      context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim()},
+      context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim(), reviewer: $('reviewer-name').value.trim()},
       retrievedAt: sources.retrievedAt, inventory
     });
     $('inventory-status').textContent='Analysis complete for the selected documents. Review the evidence below.';
@@ -311,6 +312,18 @@ function renderQuestions() {
   for(const q of filtered) $('questions').append(renderQuestion(q));
 }
 
+function decisionLabel(q) {
+  if (q.reviewState !== 'human-reviewed' && !q.reviewedAt) return '';
+  const parts = [];
+  if (q.reviewedAt) {
+    const date = new Date(q.reviewedAt);
+    parts.push(`recorded ${Number.isNaN(date.getTime()) ? q.reviewedAt : date.toLocaleString()}`);
+  } else parts.push('time not recorded');
+  if (q.reviewer) parts.push(`by ${q.reviewer}`);
+  if (q.decisionOrigin === 'ai-accepted') parts.push('AI suggestion accepted by reviewer');
+  return `Human decision ${parts.join('; ')}.`;
+}
+
 function renderQuestion(q) {
   const article=node('article',null,'question');article.id=`question-${q.id}`;
   const top=node('div',null,'question-top');top.append(node('span',`${q.id} | ${q.area}`,'meta'),node('span',q.reviewState==='human-reviewed'?'Human reviewed':'Not yet reviewed','badge-text'));
@@ -320,17 +333,21 @@ function renderQuestion(q) {
   else {
     const list=node('ol',null,'evidence');
     for(const ev of q.evidence){
-      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}`,'meta'));list.append(li);
+      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}${ev.negated?' ; possible negation (verify context)':''}`,'meta'));list.append(li);
     }
     details.append(list);
   }
   article.append(details);
   if(q.aiProposal){
+    const binding=q.aiProposal.importedFor;
+    const mismatch=Boolean(binding)&&(binding.repository!==review.repository.url||binding.commitSha!==review.commitSha||(binding.presetId||null)!==(review.preset?.id||null)||(binding.presetVersion||null)!==(review.preset?.version||null));
     const proposal=node('section',null,'ai-proposal');proposal.append(node('strong',`Unapproved AI suggestion: ${statusLabel(q.aiProposal.suggestedAnswer)}`),node('p',q.aiProposal.explanation),node('p',`Cites: ${q.aiProposal.evidenceIds.join(', ') || 'none'}`,'meta'));
-    const approve=node('button','Apply suggestion as human decision','secondary');approve.type='button';approve.addEventListener('click',()=>{
+    if(mismatch)proposal.append(node('p','This suggestion is bound to a different repository, commit or pack version. It cannot be applied here.','help'));
+    const approve=node('button','Apply suggestion as human decision','secondary');approve.type='button';approve.disabled=mismatch;approve.addEventListener('click',()=>{
+      if(mismatch){$('ai-message').textContent='Suggestion belongs to a different review; not applied.';return;}
       const current=review.questions.find(x=>x.id===q.id)||q;
       const answer=q.aiProposal.suggestedAnswer;const why=`Reviewer accepted AI proposal: ${q.aiProposal.explanation}`;
-      const next={...applyReviewerDecision(current,answer,why),aiProposal:null};
+      const next={...applyReviewerDecision(current,answer,why,{reviewer:review.context?.reviewer||'',origin:'ai-accepted'}),aiProposal:null};
       review.questions=review.questions.map(x=>x.id===q.id?next:x);
       updateCounts();updateQuestionCard(next);proposal.remove();
       $('ai-message').textContent='Suggestion applied as a human decision; the rationale records the AI origin.';
@@ -340,10 +357,11 @@ function renderQuestion(q) {
   const edit=node('div',null,'review-inputs');
   const selHolder=node('div');const label=node('label','Review answer');const select=node('select');label.htmlFor=`answer-${q.id}`;select.id=label.htmlFor;
   for(const value of ['needs-investigation','met','not-met','not-applicable']){const option=node('option',statusLabel(value));option.value=value;select.append(option);}select.value=q.answer;
-  select.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,select.value,current.reviewerRationale));});
+  select.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,select.value,current.reviewerRationale,{reviewer:review.context?.reviewer||'',origin:'human'}));});
   selHolder.append(label,select);
-  const whyHolder=node('div');const rationaleLabel=node('label','Reviewer rationale / outstanding question');const rationale=node('textarea');rationale.id=`why-${q.id}`;rationale.rows=3;rationale.value=q.reviewerRationale;rationaleLabel.htmlFor=rationale.id;rationale.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,current.answer,rationale.value));});whyHolder.append(rationaleLabel,rationale);
+  const whyHolder=node('div');const rationaleLabel=node('label','Reviewer rationale / outstanding question');const rationale=node('textarea');rationale.id=`why-${q.id}`;rationale.rows=3;rationale.value=q.reviewerRationale;rationaleLabel.htmlFor=rationale.id;rationale.addEventListener('change',()=>{const current=review.questions.find(x=>x.id===q.id)||q;replaceQuestion(q.id,applyReviewerDecision(current,current.answer,rationale.value,{reviewer:review.context?.reviewer||'',origin:'human'}));});whyHolder.append(rationaleLabel,rationale);
   edit.append(selHolder,whyHolder);article.append(edit);
+  const decision=node('p',decisionLabel(q),'meta');decision.id=`decision-${q.id}`;decision.hidden=!decisionLabel(q);article.append(decision);
   return article;
 }
 function updateQuestionCard(q){
@@ -355,6 +373,8 @@ function updateQuestionCard(q){
   if(select)select.value=q.answer;
   const rationale=document.getElementById(`why-${q.id}`);
   if(rationale&&document.activeElement!==rationale)rationale.value=q.reviewerRationale;
+  const decision=document.getElementById(`decision-${q.id}`);
+  if(decision){const text=decisionLabel(q);decision.textContent=text;decision.hidden=!text;}
 }
 function replaceQuestion(id,next){
   review.questions=review.questions.map(q=>q.id===id?next:q);
@@ -373,7 +393,8 @@ function importAISuggestions(){
     const text=$('ai-json').value;
     if(text.length>150000)throw Error('AI proposal input exceeds 150 KB.');
     const proposals=validateAIProposals(JSON.parse(text),review);
-    const byId=new Map(proposals.map(p=>[p.questionId,p]));
+    const importedFor={repository:review.repository.url,commitSha:review.commitSha,presetId:review.preset?.id||null,presetVersion:review.preset?.version||null};
+    const byId=new Map(proposals.map(p=>[p.questionId,{...p,importedFor}]));
     review.questions=review.questions.map(q=>byId.has(q.id)?{...q,aiProposal:byId.get(q.id)}:q);
     renderQuestions();$('ai-message').textContent=`Imported ${proposals.length} unapproved suggestions. Nothing was marked reviewed.`;
   }catch(err){$('ai-message').textContent=`Import rejected: ${err.message}`;}
@@ -381,9 +402,10 @@ function importAISuggestions(){
 async function loadSavedReview(ev){
   try{
     const file=ev.target.files?.[0];if(!file)return;if(file.size>2500000)throw Error('File too large (maximum 2.5 MB).');
-    const candidate=JSON.parse(await file.text());
-    if(!['0.1.0','0.2.0'].includes(candidate.schemaVersion)||!Array.isArray(candidate.questions)||!Array.isArray(candidate.selectedAreas)||!candidate.repository?.url||!candidate.commitSha||!candidate.scope?.warnings||!candidate.questionnaireSources)throw Error('Unsupported review data format.');
-    if(candidate.questions.length>1000)throw Error('Unreasonable number of questions.');
+    const candidate=validateSavedReview(JSON.parse(await file.text()));
+    for(const q of candidate.questions){
+      if(q.aiProposal&&!q.aiProposal.importedFor)q.aiProposal.importedFor={repository:candidate.repository.url,commitSha:candidate.commitSha,presetId:candidate.preset?.id||null,presetVersion:candidate.preset?.version||null};
+    }
     discovery=null;$('inventory').hidden=true;review=candidate;showReview();updateMessage('Saved review opened locally; no network request made.');
   }catch(err){updateMessage(`Could not open review: ${err.message}`);}finally{ev.target.value='';}
 }

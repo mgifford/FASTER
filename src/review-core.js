@@ -137,7 +137,17 @@ export function suggestProjectType({ repo = {}, tree = [] } = {}) {
   return { type: 'other', reasons: ['no strong project-type signal'] };
 }
 
-function normalized(text) { return String(text ?? '').toLowerCase(); }
+function normalized(text) { return String(text ?? '').normalize('NFKC').toLowerCase(); }
+
+const NEGATION_HINT = /\b(?:not|no|never|without|cannot|can't|doesn't|does not|unsupported|missing|lacks|absence of)\b/i;
+
+function termPattern(term) {
+  const escaped = String(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Require a word boundary before the term so short phrases such as "api"
+  // do not match inside "capital" or "rapid". Suffixes remain open so stems
+  // such as "accessib" still match "accessibility".
+  return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}`, 'u');
+}
 
 export function findEvidence({ files, issues = [], rules, questions, repoUrl, sha, maxPerQuestion = 6, retrievedAt = null }) {
   const results = Object.fromEntries(questions.map(q => [q.id, []]));
@@ -176,6 +186,7 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
   for (const q of questions) {
     const terms = [...new Set((termsByQuestion.get(q.id) || []).map(normalized).filter(Boolean))];
     if (!terms.length) continue;
+    const matchers = terms.map(term => ({term, pattern:termPattern(term)}));
     const buckets = sources.map(source => ({source, items:[]}));
     for (const [sourceIndex, source] of sources.entries()) {
       let perSource = 0;
@@ -184,8 +195,10 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
       for (let line = 0; line < lines.length && perSource < maxPerQuestion; line++) {
         const content = lines[line].trim();
         if (!content || content.length < 12) continue;
-        const found = terms.filter(term => normalized(content).includes(term));
-        if (!found.length) continue;
+        const haystack = normalized(content);
+        const matched = matchers.filter(({pattern}) => pattern.test(haystack));
+        if (!matched.length) continue;
+        const found = matched.map(({term}) => term);
         const discussion = source.kind.endsWith('-discussion');
         buckets[sourceIndex].items.push({
           questionId: q.id,
@@ -197,6 +210,7 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
           url: discussion ? source.url : `${source.url}#L${line + 1}`,
           snippet: content.slice(0, 300),
           matchedTerms: found,
+          negated: NEGATION_HINT.test(content),
           sourceState: source.state,
           merged: source.merged,
           mergedAt: source.mergedAt,
@@ -242,7 +256,7 @@ export function newReview({ repo, sha, selectedAreas, questions, evidence, sourc
     commitSha: sha,
     selectedAreas: [...selectedAreas],
     preset: preset ? {id:preset.id,title:preset.title,kind:preset.kind,status:preset.status,version:preset.version || 'unversioned'} : {id:'legacy',title:'Legacy starter pack',kind:'unspecified',status:'unofficial',version:'unversioned'},
-    context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240)},
+    context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240), reviewer: String(context.reviewer || '').slice(0, 120)},
     questionnaireSources: sourceConfig.reviewAreas.filter(a => selectedAreas.includes(a.id)),
     scope: { filesInspected: fileSummary, discussionsInspected: issueSummary, warnings, inventory },
     reviewStatus: 'draft-evidence-assisted-review-not-a-conformance-determination',
@@ -257,9 +271,49 @@ export function newReview({ repo, sha, selectedAreas, questions, evidence, sourc
   };
 }
 
-export function applyReviewerDecision(question, answer, rationale = '') {
+export function validateSavedReview(candidate) {
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('Expected a saved review object.');
+  if (!['0.1.0', '0.2.0'].includes(candidate.schemaVersion)) throw new Error('Unsupported review schema version.');
+  if (!/^https:\/\/github\.com\/[^/\s]+\/[^/\s]+\/?$/.test(String(candidate.repository?.url || ''))) throw new Error('Saved review must reference a public github.com repository.');
+  if (!/^[0-9a-f]{7,40}$/i.test(String(candidate.commitSha || ''))) throw new Error('Saved review must include a commit SHA.');
+  if (!Array.isArray(candidate.selectedAreas) || candidate.selectedAreas.some(area => typeof area !== 'string')) throw new Error('Saved review has invalid selected areas.');
+  if (!Array.isArray(candidate.questionnaireSources)) throw new Error('Saved review is missing questionnaire sources.');
+  if (!Array.isArray(candidate.scope?.warnings) || candidate.scope.warnings.some(w => typeof w !== 'string')) throw new Error('Saved review has invalid warnings.');
+  if (!Array.isArray(candidate.questions) || candidate.questions.length > 1000) throw new Error('Saved review has an invalid question list.');
+  if (candidate.preset !== null && candidate.preset !== undefined && (typeof candidate.preset !== 'object' || typeof candidate.preset.id !== 'string')) throw new Error('Saved review has an invalid preset.');
+  for (const q of candidate.questions) {
+    if (!q || typeof q !== 'object' || typeof q.id !== 'string' || typeof q.area !== 'string' || typeof q.prompt !== 'string' || typeof q.why !== 'string') throw new Error('Saved review contains an invalid question.');
+    if (!REVIEW_STATES.includes(q.answer)) throw new Error(`Saved review contains an invalid answer for ${q.id}.`);
+    if (!Array.isArray(q.evidence)) throw new Error(`Saved review question ${q.id} has no evidence list.`);
+    if (typeof q.reviewerRationale !== 'string') q.reviewerRationale = '';
+    if (q.aiProposal) {
+      if (typeof q.aiProposal !== 'object' || !REVIEW_STATES.includes(q.aiProposal.suggestedAnswer) || typeof q.aiProposal.explanation !== 'string' || !Array.isArray(q.aiProposal.evidenceIds)) throw new Error(`Saved review question ${q.id} has an invalid AI proposal.`);
+      const evidenceIds = new Set(q.evidence.map(e => e.id));
+      if (q.aiProposal.evidenceIds.some(id => !evidenceIds.has(id))) throw new Error(`Saved review question ${q.id} has an AI proposal citing unknown evidence.`);
+    }
+    for (const e of q.evidence) {
+      if (!e || typeof e !== 'object' || typeof e.id !== 'string' || typeof e.source !== 'string' || typeof e.snippet !== 'string' || typeof e.url !== 'string') throw new Error(`Saved review question ${q.id} has invalid evidence.`);
+      let url;
+      try { url = new URL(e.url); } catch { throw new Error(`Saved review question ${q.id} has an invalid evidence URL.`); }
+      if (url.protocol !== 'https:' || !['github.com', 'www.github.com'].includes(url.hostname)) throw new Error(`Saved review question ${q.id} cites a non-GitHub URL.`);
+      if (!Array.isArray(e.matchedTerms)) e.matchedTerms = [];
+    }
+  }
+  return candidate;
+}
+
+export function applyReviewerDecision(question, answer, rationale = '', meta = {}) {
   if (!REVIEW_STATES.includes(answer)) throw new Error('Unknown review answer.');
-  return { ...question, answer, reviewerRationale: String(rationale).slice(0, 4000), reviewState: 'human-reviewed' };
+  const origin = meta.origin === 'ai-accepted' ? 'ai-accepted' : 'human';
+  return {
+    ...question,
+    answer,
+    reviewerRationale: String(rationale).slice(0, 4000),
+    reviewState: 'human-reviewed',
+    reviewedAt: meta.reviewedAt || new Date().toISOString(),
+    reviewer: String(meta.reviewer ?? question.reviewer ?? '').slice(0, 120),
+    decisionOrigin: origin
+  };
 }
 
 export function validateAIProposals(proposals, review) {
@@ -301,6 +355,7 @@ export function toMarkdown(review) {
     `- Target type: ${md(review.context?.targetType || 'unspecified')}`,
     `- Review goal: ${md(review.context?.reviewPurpose || 'Not specified')}`,
     `- Requested document: ${md(review.context?.requestedDocument || 'Automatic selection')}`,
+    `- Reviewer: ${md(review.context?.reviewer || 'Not recorded')}`,
     `- Areas: ${review.selectedAreas.join(', ')}`,
     `- Sources examined: ${(review.scope?.filesInspected || []).map(md).join(', ') || 'None'}`,
     `- Discussions examined: ${(review.scope?.discussionsInspected || []).map(md).join(', ') || 'None'}`,
@@ -310,13 +365,17 @@ export function toMarkdown(review) {
   const coverage = review.scope?.inventory?.counts;
   if (coverage) output.push(`- Coverage: ${coverage.discovered} files discovered; ${coverage.documents} documents; ${coverage.selectedDocuments ?? 'unknown'} selected; ${coverage.skippedLarge || 0} too large; ${coverage.skippedUnsupported || 0} unsupported.`, '');
   for (const q of review.questions) {
-    output.push(`## ${q.id}: ${md(q.prompt)}`, '', `- Answer: **${md(q.answer)}**`, `- Review state: ${md(q.reviewState)}`, `- Reviewer rationale: ${md(q.reviewerRationale) || 'Not provided'}`, '');
+    const decisionParts = [];
+    if (q.reviewedAt) decisionParts.push(`recorded ${md(q.reviewedAt)}`);
+    if (q.reviewer) decisionParts.push(`reviewer ${md(q.reviewer)}`);
+    if (q.decisionOrigin) decisionParts.push(`origin ${md(q.decisionOrigin)}`);
+    output.push(`## ${q.id}: ${md(q.prompt)}`, '', `- Answer: **${md(q.answer)}**`, `- Review state: ${md(q.reviewState)}${decisionParts.length ? ` (${decisionParts.join('; ')})` : ''}`, `- Reviewer rationale: ${md(q.reviewerRationale) || 'Not provided'}`, '');
     if (q.aiProposal) output.push(`- Unapproved AI suggestion: ${md(q.aiProposal.suggestedAnswer)} (${md(q.aiProposal.explanation)})`, '');
     output.push('Evidence candidates:');
     if (!q.evidence.length) output.push('- None found in sampled sources. This does not establish absence.');
     for (const e of q.evidence) {
       const sourceLink=safeMarkdownUrl(e.url);
-      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}`);
+      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}${e.negated ? ' (possible negation; verify context)' : ''}`);
     }
     output.push('');
   }
@@ -330,7 +389,7 @@ function buildPromptData(review, maxChars = 110000) {
     repository: review.repository.url,
     commitSha: review.commitSha,
     preset: review.preset,
-    context: review.context,
+    context: review.context ? {targetType:review.context.targetType, reviewPurpose:review.context.reviewPurpose, requestedDocument:review.context.requestedDocument} : null,
     scopeWarnings: review.scope?.warnings || [],
     promptWarnings: [],
     questions: []
@@ -340,7 +399,7 @@ function buildPromptData(review, maxChars = 110000) {
   for (const q of review.questions) {
     const qData = { id:q.id, area:q.area, prompt:q.prompt, why:q.why, evidence:[] };
     for (const e of q.evidence) {
-      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, sourceState:e.sourceState, merged:e.merged };
+      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, sourceState:e.sourceState, merged:e.merged, negated:e.negated };
       const cost = JSON.stringify(item, null, 2).length + 2;
       if (used + cost > maxChars) { omittedEvidence++; continue; }
       qData.evidence.push(item); used += cost;

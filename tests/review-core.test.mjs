@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,buildInventory,suggestProjectType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
+import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,buildInventory,suggestProjectType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,validateSavedReview,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
 const question={id:'A11Y-001',area:'accessibility',prompt:'Accessible name?',why:'Meaningful names.'};
 const cfg={reviewAreas:[{id:'accessibility',title:'Accessibility'}]};
 function fixtureReview(){
@@ -26,9 +26,12 @@ test('Evidence is a candidate with pinned source, not automatically met',()=>{
 test('Review action is explicit, separate from AI suggestion',()=>{
   const review=fixtureReview();
   assert.throws(()=>applyReviewerDecision(review.questions[0],'yes'));
-  const next=applyReviewerDecision(review.questions[0],'met','Verified this clause');
+  const next=applyReviewerDecision(review.questions[0],'met','Verified this clause',{reviewer:'Ada Example',origin:'human'});
   assert.equal(next.reviewState,'human-reviewed');
   assert.equal(next.reviewerRationale,'Verified this clause');
+  assert.equal(next.reviewer,'Ada Example');
+  assert.equal(next.decisionOrigin,'human');
+  assert.ok(next.reviewedAt);
 });
 test('AI proposal references must be actual evidence IDs',()=>{
   const review=fixtureReview();
@@ -166,4 +169,49 @@ test('Review records retrieval time and inventory coverage',()=>{
   const markdown=toMarkdown(review);
   assert.match(markdown,/Retrieved: 2026-11-20T00:00:00\.000Z/);
   assert.match(markdown,/Coverage: 10 files discovered; 3 documents; 2 selected/);
+});
+
+test('Word-boundary matching avoids substring false positives and flags negation',()=>{
+  const question={id:'Q-WORD',area:'architecture',prompt:'API?',why:'Test.'};
+  const noMatch=findEvidence({
+    files:[{path:'doc.md',content:'The capital city had rapid transit.',kind:'repository-document'}],
+    rules:[{id:'r',questionId:question.id,phrases:['api']}],questions:[question],repoUrl:'https://github.com/o/r',sha:'abc'
+  });
+  assert.equal(noMatch[question.id].length,0);
+  const negative=findEvidence({
+    files:[{path:'doc.md',content:'This API does not support accessible names.',kind:'repository-document'}],
+    rules:[{id:'r',questionId:question.id,phrases:['api']}],questions:[question],repoUrl:'https://github.com/o/r',sha:'abc'
+  });
+  assert.equal(negative[question.id].length,1);
+  assert.equal(negative[question.id][0].negated,true);
+});
+
+test('Saved-review validation rejects malformed evidence and accepts a minimal review',()=>{
+  const review=fixtureReview();
+  review.commitSha='deadbeef';
+  review.context={targetType:'library',reviewPurpose:'',requestedDocument:'',reviewer:''};
+  assert.equal(validateSavedReview(review),review);
+  const badUrl=JSON.parse(JSON.stringify(review));
+  badUrl.questions[0].evidence[0].url='https://evil.example/doc';
+  assert.throws(()=>validateSavedReview(badUrl));
+  const badEvidence=JSON.parse(JSON.stringify(review));
+  delete badEvidence.questions[0].evidence;
+  assert.throws(()=>validateSavedReview(badEvidence));
+  const badAnswer=JSON.parse(JSON.stringify(review));
+  badAnswer.questions[0].answer='yes';
+  assert.throws(()=>validateSavedReview(badAnswer));
+  const badAi=JSON.parse(JSON.stringify(review));
+  badAi.questions[0].aiProposal={suggestedAnswer:'met',explanation:'',evidenceIds:['fake']};
+  assert.throws(()=>validateSavedReview(badAi));
+});
+
+test('Decisions can record AI origin and render provenance in Markdown',()=>{
+  const review=fixtureReview();
+  review.commitSha='deadbeef';
+  review.context.reviewer='Ada Example';
+  review.questions[0]=applyReviewerDecision(review.questions[0],'met','Accepted after reading the clause',{reviewer:'Ada Example',origin:'ai-accepted'});
+  const markdown=toMarkdown(review);
+  assert.match(markdown,/Reviewer: Ada Example/);
+  assert.match(markdown,/origin ai-accepted/);
+  assert.match(markdown,/recorded /);
 });

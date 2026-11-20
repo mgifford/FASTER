@@ -3,7 +3,24 @@ import {parseGitHubUrl,safeRef,safeRepositoryPath,selectFiles,detectFileType,bui
 const API = 'https://api.github.com';
 let lastRateLimit = null;
 
-async function githubGet(path, signal) {
+function retryAfterMs(value) {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
+}
+
+function wait(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+    const timer = setTimeout(() => { signal?.removeEventListener('abort', onAbort); resolve(); }, ms);
+    const onAbort = () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); };
+    signal?.addEventListener('abort', onAbort, {once:true});
+  });
+}
+
+async function githubGet(path, signal, attempt = 0) {
   const response = await fetch(`${API}${path}`, { signal, headers: { Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' } });
   const limitHeader = response.headers.get('x-ratelimit-limit');
   const remainingHeader = response.headers.get('x-ratelimit-remaining');
@@ -13,8 +30,18 @@ async function githubGet(path, signal) {
   const reset = resetHeader === null ? NaN : Number(resetHeader);
   if (Number.isFinite(limit) && Number.isFinite(remaining)) lastRateLimit = {limit, remaining, reset:Number.isFinite(reset) ? reset : null};
   if (!response.ok) {
-    const rate = response.headers.get('x-ratelimit-remaining');
-    throw new Error(`GitHub API returned ${response.status}. ${rate === '0' ? 'Rate limit reached; try later or use a server-side cache.' : 'Check the repository and reference.'}`);
+    const status = response.status;
+    const retryable = status === 429 || status === 403 || status === 502 || status === 503 || status === 504;
+    const retryDelay = retryAfterMs(response.headers.get('retry-after'));
+    const waitMs = retryDelay ?? (status >= 500 ? 500 : 1000);
+    if (retryable && attempt < 1 && remaining !== 0 && waitMs <= 5000) {
+      await wait(waitMs, signal);
+      return githubGet(path, signal, attempt + 1);
+    }
+    const when = Number.isFinite(reset) ? ` Try again after ${new Date(reset * 1000).toLocaleTimeString()}.` : ' Try again later.';
+    if (remaining === 0) throw new Error(`GitHub API rate limit reached (${status}).${when}`);
+    if (status === 403) throw new Error(`GitHub API refused the request (403), possibly a secondary rate limit or permission problem.${when}`);
+    throw new Error(`GitHub API returned ${status}. Check the repository, reference and network connection.`);
   }
   return response.json();
 }

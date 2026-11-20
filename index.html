@@ -34,6 +34,7 @@
       <div class="form-grid">
         <div><label for="review-purpose">Review goal (optional)</label><input id="review-purpose" maxlength="800" placeholder="e.g., release readiness or self-review"></div>
         <div><label for="document-path">Priority document path (optional)</label><input id="document-path" maxlength="240" placeholder="docs/specification.md" aria-describedby="doc-help"><p class="help" id="doc-help">A relative repository path to prioritize; no file is required.</p></div>
+        <div><label for="reviewer-name">Reviewer name (optional)</label><input id="reviewer-name" maxlength="120" placeholder="Recorded with human decisions"><p class="help">Only stored locally in the review and export.</p></div>
       </div>
       <fieldset><legend>Review areas</legend><p class="help">Select relevant cross-cutting subjects. These are preliminary probes, not an official assessment or conformance test.</p><div id="areas" class="areas"></div></fieldset>
       <label class="checkline"><input id="include-code" type="checkbox"> Also inspect a small sample of implementation code (optional)</label>
