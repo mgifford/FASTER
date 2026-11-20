@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,buildInventory,suggestProjectType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,validateSavedReview,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
+import {parseGitHubUrl,safeRef,safeRepositoryPath,detectFileType,buildInventory,suggestProjectType,selectFiles,hasReviewableDocuments,findEvidence,newReview,applyReviewerDecision,validateSavedReview,extractPublishedLinks,toMarkdown,validateAIProposals,toAIPrompt} from '../src/review-core.js';
 const question={id:'A11Y-001',area:'accessibility',prompt:'Accessible name?',why:'Meaningful names.'};
 const cfg={reviewAreas:[{id:'accessibility',title:'Accessibility'}]};
 function fixtureReview(){
@@ -234,4 +234,18 @@ test('A monorepo scope limits the inventory without losing counts',()=>{
   assert.equal(inventory.counts.code,0);
   assert.equal(inventory.counts.discovered,2);
   assert.deepEqual(selectFiles(tree,{scopePath:'docs'}).map(file=>file.path),['docs/a.md','docs/sub/b.md']);
+});
+
+test('Published/documentation links are extracted as unverified candidates',()=>{
+  const links=extractPublishedLinks([
+    {path:'README.md',kind:'repository-document',content:'# Docs\nSee [published documentation](https://example.org/docs).\n[unrelated](https://example.org/other)\n[insecure](http://example.org/spec)'},
+    {path:'spec.html',kind:'repository-document',content:'<link rel="canonical" href="https://example.org/spec">\n<meta property="og:url" content="https://example.org/spec">'}
+  ]);
+  assert.equal(links.length,2);
+  assert.deepEqual(links.map(link=>link.url).sort(),['https://example.org/docs','https://example.org/spec']);
+  assert.ok(links.some(link=>link.label==='canonical link'));
+  assert.ok(links.every(link=>link.url.startsWith('https://')));
+  const review=fixtureReview();
+  review.publishedLinks=links;
+  assert.match(toMarkdown(review),/Published\/documentation links found/);
 });

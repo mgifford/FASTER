@@ -1,5 +1,5 @@
 import { discoverRepository, fetchRepositorySources } from './github.js';
-import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, validateSavedReview, toMarkdown, toAIPrompt } from './review-core.js';
+import { findEvidence, hasReviewableDocuments, newReview, applyReviewerDecision, validateAIProposals, validateSavedReview, extractPublishedLinks, toMarkdown, toAIPrompt } from './review-core.js';
 import { registerWebMCP } from './webmcp.js';
 
 const $ = id => document.getElementById(id);
@@ -264,6 +264,7 @@ async function analyzeSelected() {
     }
     const relevant = currentConfig.questions.questions.filter(question => areas.includes(question.area));
     const evidence = findEvidence({files:sources.files, issues:sources.issues, rules:currentConfig.rules.rules, questions:relevant, repoUrl:discovery.repo.url, sha:discovery.sha, retrievedAt:sources.retrievedAt});
+    const publishedLinks = extractPublishedLinks(sources.files);
     const inventory = {...discovery.inventory.counts, selectedDocuments:selectedDocuments.size, selectedCode:$('include-code').checked ? discovery.inventory.defaultCodePaths.length : 0, selectedPaths:uniquePaths};
     review = newReview({
       repo: discovery.repo, sha: discovery.sha, selectedAreas: areas, questions: relevant, evidence,
@@ -271,7 +272,7 @@ async function analyzeSelected() {
       issueSummary: sources.issues.map(issue => `${issue.kind === 'pull-request-discussion' ? 'PR' : 'Issue'} #${issue.number} (${issue.kind === 'pull-request-discussion' ? (issue.merged ? 'merged' : issue.state || 'unknown') : (issue.state || 'unknown')})`),
       warnings: [...discovery.warnings, ...sources.warnings], preset: currentConfig.preset,
       context: {targetType: $('target-type').value, reviewPurpose: $('review-purpose').value.trim(), requestedDocument: $('document-path').value.trim(), scopePath: $('scope-path').value.trim().replace(/\/+$/, ''), reviewer: $('reviewer-name').value.trim()},
-      retrievedAt: sources.retrievedAt, inventory
+      retrievedAt: sources.retrievedAt, inventory, publishedLinks
     });
     $('inventory-status').textContent='Analysis complete for the selected documents. Review the evidence below.';
     showReview();
@@ -287,6 +288,9 @@ function showReview() {
   $('repo-summary').replaceChildren(makeLink(review.repository.url,review.repository.url));
   const packVersion=review.preset?.version&&review.preset.version!=='unversioned'?` (v${review.preset.version})`:'';
   $('snapshot-label').textContent=`Review pack: ${review.preset?.title || 'Legacy starter'}${packVersion}. Target: ${review.context?.targetType || 'unspecified'}. Pinned commit: ${review.commitSha}. Generated: ${review.generatedAt}. Status: draft, not a conformance determination.`;
+  const published=review.publishedLinks||[];
+  $('published-details').hidden=!published.length;
+  $('published-links').replaceChildren(...published.map(link=>{const li=node('li');li.append(makeLink(link.url,link.url),node('span',` (${link.label}; ${link.source}${link.line?`:${link.line}`:''})`,'meta'));return li;}));
   $('area-filter').replaceChildren(node('option','All selected areas'));
   $('area-filter').firstChild.value='all';
   for(const area of review.questionnaireSources){const opt=node('option',area.title);opt.value=area.id;$('area-filter').append(opt);}
