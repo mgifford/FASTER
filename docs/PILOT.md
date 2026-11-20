@@ -2,8 +2,8 @@
 
 Status: **preliminary, AI-assisted labels — not yet Phase 1 acceptance.** A human reviewer must
 independently confirm or replace these 25 labels before the pilot is treated as a validated
-answer key. The candidate list was measured before the F8 word-boundary/negation change;
-re-measure after human confirmation.
+answer key. The candidate list was measured before the F8 word-boundary change and the later
+section/normative/deduplication hints; re-measure after human confirmation.
 
 | Item | Value |
 | --- | --- |

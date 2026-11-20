@@ -85,6 +85,7 @@ function repoMetadata(info) {
     stars: Number(info.stargazers_count) || 0,
     forks: Number(info.forks_count) || 0,
     updatedAt: info.updated_at || null,
+    homepage: info.homepage || null,
     htmlUrl: info.html_url || null
   };
 }

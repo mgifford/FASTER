@@ -164,6 +164,8 @@ function renderInventory(result, focus = false) {
   if (result.scopePath) meta.push(`Scope: ${result.scopePath}`);
   if (result.rateLimit) meta.push(`GitHub API remaining: ${result.rateLimit.remaining}/${result.rateLimit.limit}`);
   $('repo-meta').textContent = meta.join(' · ');
+  $('repo-homepage').replaceChildren();
+  if (repo.homepage) $('repo-homepage').append(node('span', 'Published/homepage: '), makeLink(repo.homepage, repo.homepage));
 
   const suggestion = result.suggestion;
   $('type-suggestion').textContent = suggestion ? `Suggested project type: ${suggestion.type} (not confirmed). ${suggestion.reasons.join('; ')}.` : '';
@@ -336,7 +338,7 @@ function renderQuestion(q) {
   else {
     const list=node('ol',null,'evidence');
     for(const ev of q.evidence){
-      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}${ev.negated?' ; possible negation (verify context)':''}${ev.labels?.length?`; labels: ${ev.labels.join(', ')}`:''}${ev.createdAt?`; created ${String(ev.createdAt).slice(0,10)}`:''}`,'meta'));list.append(li);
+      const li=node('li');li.append(makeLink(ev.url,`${ev.id}: ${ev.source}${ev.line?` line ${ev.line}`:''}`),node('p',ev.snippet,'snippet'),node('span',`${ev.evidenceType}; ${ev.sourceAuthority || 'unclassified'}; ${ev.strength}; matched: ${ev.matchedTerms.join(', ')}${ev.section?`; section: ${ev.section}`:''}${ev.negated?' ; possible negation (verify context)':''}${ev.normativeHint?'; possible normative language':''}${ev.contradictionHint?'; possible conflicting candidates':''}${ev.duplicateSources?.length?`; also in ${ev.duplicateSources.length} other source(s)`:''}${ev.labels?.length?`; labels: ${ev.labels.join(', ')}`:''}${ev.createdAt?`; created ${String(ev.createdAt).slice(0,10)}`:''}`,'meta'));list.append(li);
     }
     details.append(list);
   }

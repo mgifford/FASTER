@@ -21,12 +21,12 @@ Status: **review complete; Phase 0 findings recorded; F1-F7, F9, F14 and F15 rem
 | F5 pack version | **Fixed** | `version` is required in the registry/validator and carried through UI, JSON, Markdown and WebMCP. |
 | F6 multiple rules per question | **Fixed** | Phrases are merged per question; regression test added. |
 | F7 evidence cap starves discussion | **Fixed** | Round-robin document/discussion/code selection, with a discussion slot when present; regression test added. |
-| F8 substring matching false positives | **Partial** | Word-boundary terms, NFKC normalization and a possible-negation hint are implemented; semantic/generic-word ambiguity remains Phase 2 work. The pilot predates this change. |
+| F8 substring matching false positives | **Partial** | Word-boundary terms, NFKC normalization, section context, possible-normative/negation/contradiction hints and snippet deduplication are implemented; semantic/generic-word ambiguity remains Phase 2 work. The pilot predates these changes. |
 | F9 AI prompt truncation | **Fixed** | Structurally bounded evidence bundle, valid JSON, prompt warnings and omitted counts; test covers 1,000 questions. |
 | F10 inventory not visible | **Fixed** | Discovery renders selected/skipped counts, sizes, reasons, skipped-file limits and a 16-document selector. |
 | F11 preflight metadata/type suggestion | **Partial** | Metadata, API budget, an explicit type suggestion/confirmation and monorepo subdirectory scope are implemented; canonical/published-doc detection is not. |
-| F12 issue/PR provenance | **Partial** | Labels, dates and verified merged status are carried into evidence and displayed; comment links, claim comparison and a dedicated history view remain. |
-| F13 test coverage / CI | **Partial** | 38 tests plus CI, including a mocked GitHub adapter, scoped inventory and an offline evaluation harness; no DOM integration browser fixture yet. |
+| F12 issue/PR provenance | **Partial** | Labels, dates, verified merged status and the repository homepage are carried/displayed; comment links, claim comparison and a dedicated history view remain. |
+| F13 test coverage / CI | **Partial** | 41 tests plus CI, including a mocked GitHub adapter, scoped inventory, evidence-context fixtures and an offline evaluation harness; no DOM integration browser fixture yet. |
 | F14 imported-data binding | **Fixed** | Saved reviews are strictly validated; AI proposals carry a repository/commit/pack binding and mismatched proposals cannot be applied. |
 | F15 decision provenance | **Fixed** | Optional reviewer name, decision timestamp and `human`/`ai-accepted` origin are recorded in the review, cards and Markdown. Sign-off remains a future state. |
 | F16 rate limits/retry | **Partial** | API budget is displayed, pack switching is guarded, bounded 429/403/5xx retries and a bounded in-memory SHA cache are implemented; no persistent/server cache or full secondary-limit backoff. |
@@ -104,7 +104,7 @@ w3c-horizontal-starter: valid 6 areas, 22 questions, 22 rules.
 # fail 0
 ```
 
-The data validator and all 12 Node tests passed at audit time (the suite now has 38 tests after the Phase 0, Phase 1, provenance and evaluation tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
+The data validator and all 12 Node tests passed at audit time (the suite now has 41 tests after the Phase 0, Phase 1, provenance, evaluation and evidence-context tests). This matched the `README.md` claim of 12 tests, but not the then-stale `docs/ROADMAP.md` (see F18).
 
 ### Tests that were not in the repository
 

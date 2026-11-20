@@ -143,6 +143,7 @@ export function suggestProjectType({ repo = {}, tree = [] } = {}) {
 function normalized(text) { return String(text ?? '').normalize('NFKC').toLowerCase(); }
 
 const NEGATION_HINT = /\b(?:not|no|never|without|cannot|can't|doesn't|does not|unsupported|missing|lacks|absence of)\b/i;
+const NORMATIVE_HINT = /\b(?:MUST(?:\s+NOT)?|SHOULD(?:\s+NOT)?|REQUIRED|SHALL)\b/;
 
 function termPattern(term) {
   const escaped = String(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -150,6 +151,21 @@ function termPattern(term) {
   // do not match inside "capital" or "rapid". Suffixes remain open so stems
   // such as "accessib" still match "accessibility".
   return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}`, 'u');
+}
+
+
+function sectionMap(content) {
+  const lines = String(content || '').split(/\r?\n/);
+  const sections = new Array(lines.length).fill(null);
+  let current = null;
+  for (let index = 0; index < lines.length; index++) {
+    const markdown = lines[index].match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    const html = lines[index].match(/<h([1-6])[^>]*>(.*?)<\/h\1>/i);
+    if (markdown) current = {text:markdown[2].replace(/[#*_`]/g, '').trim().slice(0, 120), level:markdown[1].length};
+    else if (html) current = {text:html[2].replace(/<[^>]+>/g, '').trim().slice(0, 120), level:Number(html[1])};
+    sections[index] = current;
+  }
+  return sections;
 }
 
 export function findEvidence({ files, issues = [], rules, questions, repoUrl, sha, maxPerQuestion = 6, retrievedAt = null }) {
@@ -167,6 +183,7 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
       path: file.path,
       content: file.content,
       url: `${repoUrl}/blob/${sha}/${file.path.split('/').map(encodeURIComponent).join('/')}`,
+      sections: file.kind === 'implementation-code' ? null : sectionMap(file.content),
       state: null,
       merged: false,
       mergedAt: null,
@@ -188,7 +205,8 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
         mergedAt: issue.mergedAt || null,
         labels: Array.isArray(issue.labels) ? issue.labels : [],
         createdAt: issue.createdAt || null,
-        updatedAt: issue.updatedAt || null
+        updatedAt: issue.updatedAt || null,
+        sections: null
       };
     })
   ];
@@ -220,6 +238,9 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
           snippet: content.slice(0, 300),
           matchedTerms: found,
           negated: NEGATION_HINT.test(content),
+          normativeHint: NORMATIVE_HINT.test(content),
+          section: source.sections ? source.sections[line]?.text || null : null,
+          sectionLevel: source.sections ? source.sections[line]?.level || null : null,
           labels: source.labels,
           createdAt: source.createdAt,
           updatedAt: source.updatedAt,
@@ -250,11 +271,25 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
       }
       if (!added) break;
     }
-    if (reservedDiscussion && discussionSelected === 0) {
+    if (reservedDiscussion && discussionSelected < discussionCap) {
       if (selected.length < maxPerQuestion) selected.push(reservedDiscussion);
       else selected[selected.length - 1] = reservedDiscussion;
     }
-    results[q.id] = selected.map((item, index) => ({...item, id:`${q.id}-E${index + 1}`}));
+    const contradictionHint = selected.some(item => item.negated) && selected.some(item => !item.negated);
+    const deduped = [];
+    const seenSnippets = new Map();
+    for (const item of selected) {
+      const key = normalized(item.snippet);
+      if (seenSnippets.has(key)) {
+        seenSnippets.get(key).duplicateSources.push({source:item.source, url:item.url, line:item.line});
+      } else {
+        item.duplicateSources = [];
+        item.contradictionHint = contradictionHint;
+        seenSnippets.set(key, item);
+        deduped.push(item);
+      }
+    }
+    results[q.id] = deduped.map((item, index) => ({...item, id:`${q.id}-E${index + 1}`}));
   }
   return results;
 }
@@ -361,6 +396,7 @@ export function toMarkdown(review) {
     '',
     `- Repository: ${review.repository.url}`,
     `- Commit: \`${review.commitSha}\``,
+    ...(review.repository.homepage ? [`- Homepage: ${safeMarkdownUrl(review.repository.homepage) ? `[${md(review.repository.homepage)}](${safeMarkdownUrl(review.repository.homepage)})` : md(review.repository.homepage)}`] : []),
     `- Generated: ${review.generatedAt}`,
     `- Status: ${review.reviewStatus}`,
     `- Review pack: ${md(review.preset?.title || 'Not recorded')} (${md(review.preset?.id || 'unknown')}; ${md(review.preset?.status || 'unknown')}; version ${md(review.preset?.version || 'unversioned')})`,
@@ -388,7 +424,7 @@ export function toMarkdown(review) {
     if (!q.evidence.length) output.push('- None found in sampled sources. This does not establish absence.');
     for (const e of q.evidence) {
       const sourceLink=safeMarkdownUrl(e.url);
-      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}${e.negated ? ' (possible negation; verify context)' : ''}${e.labels?.length ? ` (labels: ${md(e.labels.join(', '))})` : ''}`);
+      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}${e.section ? ` (section: ${md(e.section)})` : ''}${e.negated ? ' (possible negation; verify context)' : ''}${e.normativeHint ? ' (possible normative language)' : ''}${e.contradictionHint ? ' (possible conflicting candidates)' : ''}${e.duplicateSources?.length ? ` (also in ${e.duplicateSources.length} other source(s))` : ''}${e.labels?.length ? ` (labels: ${md(e.labels.join(', '))})` : ''}`);
     }
     output.push('');
   }
@@ -412,7 +448,7 @@ function buildPromptData(review, maxChars = 110000) {
   for (const q of review.questions) {
     const qData = { id:q.id, area:q.area, prompt:q.prompt, why:q.why, evidence:[] };
     for (const e of q.evidence) {
-      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, sourceState:e.sourceState, merged:e.merged, negated:e.negated, labels:e.labels, createdAt:e.createdAt };
+      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, section:e.section, sourceState:e.sourceState, merged:e.merged, negated:e.negated, normativeHint:e.normativeHint, contradictionHint:e.contradictionHint, labels:e.labels, createdAt:e.createdAt };
       const cost = JSON.stringify(item, null, 2).length + 2;
       if (used + cost > maxChars) { omittedEvidence++; continue; }
       qData.evidence.push(item); used += cost;

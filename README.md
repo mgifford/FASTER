@@ -51,7 +51,8 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Dynamic pack selector and scoping inputs (repository, default branch or specified ref, target type, goal, priority document, selected review areas, optional code sample).
 - Pinned SHA for repository file citations; relative path and GitHub URL validation.
 - Bounded retrieval: discovery returns a ranked inventory with selected/skipped counts, file sizes, reasons and tree-truncation warnings; analysis fetches **up to 16 selected documents, 4 code files, 20 issues, and 10 PRs**. GitHub requests may fail or be rate-limited; the UI reports the remaining API budget.
-- Source provenance categories and keyword discovery. Candidate matches **never** mean a question is met, not met or inapplicable.
+- Source provenance categories, Markdown/HTML section context, word-boundary discovery, possible-normative and possible-negation hints, contradiction hints and snippet deduplication. Candidate matches **never** mean a question is met, not met or inapplicable.
+- Repository homepage/published link from GitHub metadata where available.
 - Human decisions and rationales, unapproved AI suggestion import with verified evidence IDs, saved-review JSON import, Markdown and JSON export.
 - Reviewer identity, decision timestamps and decision origin (`human` vs `ai-accepted`) are recorded and exported; reviewer identity is deliberately excluded from the AI evidence prompt.
 - Saved-review JSON is strictly validated; AI proposals are bound to the repository, commit and pack version and cannot be applied across reviews.
@@ -60,7 +61,7 @@ No `npm install` is needed. Do not open `index.html` with `file://`: modules and
 - Project metadata and a transparent project-type suggestion (never auto-confirmed); the reviewer applies it explicitly.
 - Optional monorepo subdirectory scope, ranked document inventory, and a bounded in-memory tree/blob cache keyed by immutable SHA.
 - Issue/PR samples include labels, timestamps and verified merged status, displayed with the evidence and carried into exports; mutable-source warnings remain.
-- Data pack registry with explicit pack versions, validation scripts, **38 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
+- Data pack registry with explicit pack versions, validation scripts, **41 automated tests**, and a semantic no-framework UI with reduced-motion and forced-colors provisions. Answer changes keep focus, and a failed document discovery stops rather than fabricating a target. Remaining accessibility gaps are listed in [`docs/BASELINE.md`](docs/BASELINE.md).
 - GitHub Pages deployment through GitHub Actions, gated by the `npm run check` CI job.
 
 ## Not implemented
