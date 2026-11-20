@@ -70,7 +70,15 @@ satisfies this through:
 Any fork, static mirror or future Cloudflare endpoint that runs modified code must keep an
 equivalent source offer visible. Do not remove the footer link when rebranding.
 
-## 6. Cloudflare: what it can and cannot do
+## 6. AI evaluations do not require Cloudflare
+
+The offline evaluation harness in `docs/EVALUATION.md` compares a saved review with labelled
+passages and validates AI proposals without calling a model. Use the reviewer's own provider or
+a manual workflow; do not add a hosted model dependency merely to run evaluations. A Worker
+could later host an optional evaluation proxy or remote MCP endpoint, with consent, auth,
+budget and source-offer requirements, but that is not needed for the current pilot.
+
+## 7. Cloudflare: what it can and cannot do
 
 GitHub Pages serves static files only. It cannot expose a persistent MCP endpoint, run
 OAuth, hold a GitHub token, cache GitHub API responses, or enforce per-user quotas.
@@ -103,7 +111,7 @@ output directory `/`). It can provide per-PR preview URLs and a second static ho
 not add MCP. If used, keep GitHub Pages canonical and update the source-offer link; do not let
 the two deployments drift.
 
-## 7. Rollback
+## 8. Rollback
 
 - Revert the offending commit on `main`; the Pages workflow redeploys the previous content.
 - If a deploy fails, inspect the **Deploy GitHub Pages** run; the `check` job must pass before

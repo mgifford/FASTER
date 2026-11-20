@@ -39,3 +39,4 @@ Run `python3 -m http.server 8000` and visit `http://localhost:8000`. Enter a pub
 | How is it deployed, and what does AGPL require? | `docs/DEPLOYMENT.md` |
 | What is known broken or untested? | `docs/BASELINE.md` |
 | What does the first generic pilot show? | `docs/PILOT.md` |
+| How are evidence and AI proposals evaluated? | `docs/EVALUATION.md` |

@@ -1,0 +1,202 @@
+[
+  {
+    "questionId": "I18N-001",
+    "source": "docs/topics/i18n/index.txt",
+    "line": 17,
+    "relevant": true,
+    "evidenceId": "I18N-001-E1",
+    "label": "languages and formats tailored to the audience"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/topics/i18n/index.txt",
+    "line": 20,
+    "relevant": true,
+    "evidenceId": "I18N-001-E4",
+    "label": "translation of text"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/topics/i18n/index.txt",
+    "line": 21,
+    "relevant": true,
+    "evidenceId": "I18N-001-E7",
+    "label": "formatting dates, times and numbers"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/topics/i18n/index.txt",
+    "line": 31,
+    "relevant": true,
+    "evidenceId": null,
+    "label": "target language/country and Accept-Language"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/topics/i18n/index.txt",
+    "line": 66,
+    "relevant": true,
+    "evidenceId": null,
+    "label": "locale-name definition"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/internals/security.txt",
+    "line": 191,
+    "relevant": false,
+    "evidenceId": "I18N-001-E2",
+    "label": "template content size \u2014 unrelated to i18n"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/internals/security.txt",
+    "line": 194,
+    "relevant": false,
+    "evidenceId": "I18N-001-E5",
+    "label": "DTL content description \u2014 unrelated"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/internals/security.txt",
+    "line": 248,
+    "relevant": false,
+    "evidenceId": "I18N-001-E8",
+    "label": "LLM tooling \u2014 unrelated"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/releases/security.txt",
+    "line": 386,
+    "relevant": true,
+    "evidenceId": "I18N-001-E9",
+    "label": "Unicode denial-of-service fix"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/releases/security.txt",
+    "line": 164,
+    "relevant": true,
+    "evidenceId": "I18N-001-E6",
+    "label": "check_for_language() denial-of-service fix"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "docs/releases/security.txt",
+    "line": 109,
+    "relevant": true,
+    "evidenceId": "I18N-001-E3",
+    "label": "get_supported_language_variant()"
+  },
+  {
+    "questionId": "I18N-001",
+    "source": "PR #21970",
+    "line": null,
+    "relevant": false,
+    "evidenceId": "I18N-001-E10",
+    "label": "ORM query mentioning translation \u2014 not an i18n requirement"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/topics/security.txt",
+    "line": 2,
+    "relevant": true,
+    "evidenceId": "SEC-001-E3",
+    "label": "Security in Django"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/topics/security.txt",
+    "line": 5,
+    "relevant": true,
+    "evidenceId": "SEC-001-E9",
+    "label": "overview of security features"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/topics/security.txt",
+    "line": 33,
+    "relevant": true,
+    "evidenceId": null,
+    "label": "XSS protection"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/topics/security.txt",
+    "line": 96,
+    "relevant": true,
+    "evidenceId": null,
+    "label": "CSRF protection"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/topics/security.txt",
+    "line": 128,
+    "relevant": true,
+    "evidenceId": null,
+    "label": "SQL injection protection"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/internals/security.txt",
+    "line": 2,
+    "relevant": true,
+    "evidenceId": "SEC-001-E1",
+    "label": "Django security policy"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/internals/security.txt",
+    "line": 6,
+    "relevant": true,
+    "evidenceId": "SEC-001-E7",
+    "label": "reporting and disclosure"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/releases/security.txt",
+    "line": 2,
+    "relevant": true,
+    "evidenceId": "SEC-001-E2",
+    "label": "archive of security issues"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "docs/releases/security.txt",
+    "line": 6,
+    "relevant": true,
+    "evidenceId": "SEC-001-E8",
+    "label": "reporting and disclosure"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": ".github/SECURITY.md",
+    "line": 1,
+    "relevant": true,
+    "evidenceId": "SEC-001-E4",
+    "label": "Django security policies"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": ".github/SECURITY.md",
+    "line": 3,
+    "relevant": true,
+    "evidenceId": "SEC-001-E10",
+    "label": "link to security policy"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "PR #22316",
+    "line": null,
+    "relevant": false,
+    "evidenceId": "SEC-001-E5",
+    "label": "PR-template security checklist \u2014 not design evidence"
+  },
+  {
+    "questionId": "SEC-001",
+    "source": "PR #22314",
+    "line": null,
+    "relevant": false,
+    "evidenceId": "SEC-001-E6",
+    "label": "PR-template security checklist \u2014 not design evidence"
+  }
+]

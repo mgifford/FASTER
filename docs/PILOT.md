@@ -104,6 +104,15 @@ candidates for that question.
   screen-reader or browser-AT test.
 - Metric denominators are small; do not publish these percentages as a general quality score.
 
+## Reproduce the measurement
+
+```sh
+npm run evaluate
+```
+
+This uses the recorded review and label fixtures in `evaluations/`. See
+`docs/EVALUATION.md`. No model or network call is made.
+
 ## Next
 
 1. A human reviewer confirms or replaces the 22 labels and records disagreements.

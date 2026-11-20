@@ -70,9 +70,11 @@ function documentReason(path, preferredDocumentPath) {
   return 'document candidate';
 }
 
-export function buildInventory(tree, { includeCode = false, preferredDocumentPath = '', maxDocs = 16, maxCode = 4 } = {}) {
+export function buildInventory(tree, { includeCode = false, preferredDocumentPath = '', maxDocs = 16, maxCode = 4, scopePath = '' } = {}) {
   const entries = Array.isArray(tree) ? tree : [];
-  const blobs = entries.filter(f => f.type === 'blob');
+  const scope = String(scopePath || '').replace(/\/+$/, '');
+  const inScope = path => !scope || path === scope || path.startsWith(`${scope}/`);
+  const blobs = entries.filter(f => f.type === 'blob' && inScope(f.path));
   const documents = [], code = [], large = [];
   let unsupported = 0, empty = 0;
   for (const f of blobs) {
@@ -87,6 +89,7 @@ export function buildInventory(tree, { includeCode = false, preferredDocumentPat
   const byRank = (a, b) => (b.path === preferredDocumentPath ? 1 : 0) - (a.path === preferredDocumentPath ? 1 : 0) || b.score - a.score || a.path.localeCompare(b.path);
   documents.sort(byRank); code.sort(byRank);
   return {
+    scope: scope || null,
     documents: documents.slice(0, 100),
     code: code.slice(0, 50),
     counts: {
@@ -103,8 +106,8 @@ export function buildInventory(tree, { includeCode = false, preferredDocumentPat
   };
 }
 
-export function selectFiles(tree, { includeCode = false, maxDocs = 16, maxCode = 4, preferredDocumentPath = '' } = {}) {
-  const inventory = buildInventory(tree, { includeCode, maxDocs, maxCode, preferredDocumentPath });
+export function selectFiles(tree, { includeCode = false, maxDocs = 16, maxCode = 4, preferredDocumentPath = '', scopePath = '' } = {}) {
+  const inventory = buildInventory(tree, { includeCode, maxDocs, maxCode, preferredDocumentPath, scopePath });
   return [...inventory.documents.slice(0, maxDocs), ...(includeCode ? inventory.code.slice(0, maxCode) : [])];
 }
 
@@ -166,7 +169,10 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
       url: `${repoUrl}/blob/${sha}/${file.path.split('/').map(encodeURIComponent).join('/')}`,
       state: null,
       merged: false,
-      mergedAt: null
+      mergedAt: null,
+      labels: [],
+      createdAt: null,
+      updatedAt: null
     })),
     ...issues.map(issue => {
       const pullRequest = issue.kind === 'pull-request-discussion';
@@ -179,7 +185,10 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
         url: issue.html_url,
         state,
         merged: Boolean(issue.merged),
-        mergedAt: issue.mergedAt || null
+        mergedAt: issue.mergedAt || null,
+        labels: Array.isArray(issue.labels) ? issue.labels : [],
+        createdAt: issue.createdAt || null,
+        updatedAt: issue.updatedAt || null
       };
     })
   ];
@@ -211,6 +220,9 @@ export function findEvidence({ files, issues = [], rules, questions, repoUrl, sh
           snippet: content.slice(0, 300),
           matchedTerms: found,
           negated: NEGATION_HINT.test(content),
+          labels: source.labels,
+          createdAt: source.createdAt,
+          updatedAt: source.updatedAt,
           sourceState: source.state,
           merged: source.merged,
           mergedAt: source.mergedAt,
@@ -256,7 +268,7 @@ export function newReview({ repo, sha, selectedAreas, questions, evidence, sourc
     commitSha: sha,
     selectedAreas: [...selectedAreas],
     preset: preset ? {id:preset.id,title:preset.title,kind:preset.kind,status:preset.status,version:preset.version || 'unversioned'} : {id:'legacy',title:'Legacy starter pack',kind:'unspecified',status:'unofficial',version:'unversioned'},
-    context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240), reviewer: String(context.reviewer || '').slice(0, 120)},
+    context: {targetType: context.targetType || 'unspecified', reviewPurpose: String(context.reviewPurpose || '').slice(0, 800), requestedDocument: String(context.requestedDocument || '').slice(0, 240), scopePath: String(context.scopePath || '').slice(0, 240), reviewer: String(context.reviewer || '').slice(0, 120)},
     questionnaireSources: sourceConfig.reviewAreas.filter(a => selectedAreas.includes(a.id)),
     scope: { filesInspected: fileSummary, discussionsInspected: issueSummary, warnings, inventory },
     reviewStatus: 'draft-evidence-assisted-review-not-a-conformance-determination',
@@ -355,6 +367,7 @@ export function toMarkdown(review) {
     `- Target type: ${md(review.context?.targetType || 'unspecified')}`,
     `- Review goal: ${md(review.context?.reviewPurpose || 'Not specified')}`,
     `- Requested document: ${md(review.context?.requestedDocument || 'Automatic selection')}`,
+    `- Scope: ${md(review.context?.scopePath || 'Repository root')}`,
     `- Reviewer: ${md(review.context?.reviewer || 'Not recorded')}`,
     `- Areas: ${review.selectedAreas.join(', ')}`,
     `- Sources examined: ${(review.scope?.filesInspected || []).map(md).join(', ') || 'None'}`,
@@ -375,7 +388,7 @@ export function toMarkdown(review) {
     if (!q.evidence.length) output.push('- None found in sampled sources. This does not establish absence.');
     for (const e of q.evidence) {
       const sourceLink=safeMarkdownUrl(e.url);
-      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}${e.negated ? ' (possible negation; verify context)' : ''}`);
+      output.push(`- ${md(e.id)} [${md(e.evidenceType)}]: ${sourceLink ? `[${md(e.source)}](${sourceLink})` : md(e.source)} - ${md(e.snippet)}${e.negated ? ' (possible negation; verify context)' : ''}${e.labels?.length ? ` (labels: ${md(e.labels.join(', '))})` : ''}`);
     }
     output.push('');
   }
@@ -399,7 +412,7 @@ function buildPromptData(review, maxChars = 110000) {
   for (const q of review.questions) {
     const qData = { id:q.id, area:q.area, prompt:q.prompt, why:q.why, evidence:[] };
     for (const e of q.evidence) {
-      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, sourceState:e.sourceState, merged:e.merged, negated:e.negated };
+      const item = { id:e.id, source:e.source, url:e.url, snippet:e.snippet, evidenceType:e.evidenceType, sourceAuthority:e.sourceAuthority, line:e.line, sourceState:e.sourceState, merged:e.merged, negated:e.negated, labels:e.labels, createdAt:e.createdAt };
       const cost = JSON.stringify(item, null, 2).length + 2;
       if (used + cost > maxChars) { omittedEvidence++; continue; }
       qData.evidence.push(item); used += cost;
