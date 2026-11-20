@@ -1,4 +1,4 @@
-# Quality assurance record for consolidated starter v0.2.0
+# Quality assurance record for FASTER v0.3.0
 
 Date: 2026-11-20
 

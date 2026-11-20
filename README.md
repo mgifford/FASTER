@@ -2,7 +2,7 @@
 
 **Framework for Accessible, Secure, Traceable, Evidence-based Review**
 
-**Repository Review Assistant — version 0.2.0. Experimental, open-source, static-first.**
+**Repository Review Assistant — version 0.3.0. Experimental, open-source, static-first.**
 
 Enter **any public GitHub repository**, select a review pack, choose a few scoping options, and get a draft evidence-assisted cross-cutting review. The application samples repository documents, optional source code, recent issues and pull requests; maps keyword-based **candidate evidence** to starter questions; lets a human answer those questions; and exports Markdown or JSON. No AI provider, server, paid API or WebMCP browser support is required.
 
@@ -123,6 +123,7 @@ Cloudflare is **not** a backup for GitHub Pages. A conventional remote MCP endpo
 | `docs/IMPLEMENTATION_PROMPT.md` | **Full consolidated handoff prompt**, phased implementation and acceptance criteria |
 | `docs/BASELINE.md` | Phase 0 audit, known limitations and remediation priority |
 | `docs/PILOT.md` | Preliminary Django security/i18n pilot and labelled evidence |
+| `docs/LEARNINGS.md` | Retrospective: what worked, what failed, risks and next steps |
 | `docs/EVALUATION.md` | Offline evidence/AI-proposal evaluation harness |
 | `evaluations/` | Pilot review snapshot and 25-passage label fixture |
 | `docs/DEPLOYMENT.md` | GitHub Pages, AGPL source offer and future Cloudflare MCP plan |

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - FASTER deployment baseline (2026-11-19)
+## 0.3.0 - Phase 1 discovery, evaluation and WebMCP (2026-11-20)
 
 - Renamed the project **FASTER** (Framework for Accessible, Secure, Traceable, Evidence-based Review); the product remains the Repository Review Assistant.
 - Relicensed original code and original questions from MIT to **AGPL-3.0-only**; added `NOTICE`, a source-offer link in the site footer and deployment guidance.
@@ -22,6 +22,7 @@
 - Expanded browser WebMCP from four to eight read-only tools with input/output schemas, bounded results, activity events and a discoverable tool catalogue/example prompt. Verified with Chrome's `--enable-features=WebMCP`; the no-flag fallback remains fully functional.
 - Added an offline, model-neutral evidence/AI-proposal evaluation CLI with a recorded Django review/label fixture; no Cloudflare or model API is required.
 - Expanded the test suite from 12 to 43 tests, including UI/contrast/reflow guards, pack-version consistency, inventory/type suggestions, evidence diversity and AI-prompt bounds.
+- Recorded the build retrospective in `docs/LEARNINGS.md`.
 
 ## 0.2.0 - Generic-first consolidation (2026-11-19)
 
